@@ -13,7 +13,7 @@ public class Product {
     private ProductTypes ProductType;       //產品類型 (DIRECT, AUCTION)
     private int ProductStock;               //產品庫存量
     private String ProductCategory;         //產品類別
-    private String ProductStatus;           //產品狀態
+    private ProductStatuses ProductStatus;  //產品狀態
     private LocalDateTime CreatedTime;      //產品建立時間
     private LocalDateTime UpdatedTime;      //產品更新時間
     private LocalDateTime AuctionEndTime;   //拍賣結束時間 (僅限拍賣產品)
@@ -56,8 +56,8 @@ public class Product {
     public String getProductCategory() { return ProductCategory; }
     public void setProductCategory(String productCategory) { ProductCategory = productCategory; }
     //產品狀態
-    public String getProductStatus() { return ProductStatus; }
-    public void setProductStatus(String productStatus) { ProductStatus = productStatus; }
+    public ProductStatuses getProductStatus() { return ProductStatus; }
+    public void setProductStatus(ProductStatuses productStatus) { ProductStatus = productStatus; }
     //產品建立時間
     public LocalDateTime getCreatedTime() { return CreatedTime; }
     public void setCreatedTime(LocalDateTime createdTime) { CreatedTime = createdTime; }
