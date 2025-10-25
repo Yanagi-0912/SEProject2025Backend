@@ -32,6 +32,9 @@ public class UserServiceImpl implements UserService {
     //註冊功能
     @Override
     public void registerService(User user) {
+        if (user.getPassword() == null || user.getPassword().isEmpty()){
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
         String raw = user.getPassword();
         user.setPassword(passwordEncoder.encode(raw));
         loginRepository.save(user);
