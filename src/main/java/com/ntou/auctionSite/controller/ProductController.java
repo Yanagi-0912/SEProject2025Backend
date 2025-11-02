@@ -1,12 +1,12 @@
 package com.ntou.auctionSite.controller;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
 import com.ntou.auctionSite.model.Product;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.ntou.auctionSite.service.ProductService;
 //open postman and select POST
 // http://localhost:8080/products/add
 // {
@@ -18,12 +18,13 @@ import org.springframework.web.bind.annotation.*;
 // }
 @RestController
 public class ProductController { // 負責處理商品新增、上下架、查看、修改的class
-    private static final Map<String, Product> productMap = new HashMap<>(); // hashmap存商品id or name和商品
+    @Autowired
+    private ProductService productService;
 
     @GetMapping("/products/")
-    public ResponseEntity<Collection<Product>> getAllProduct() {
+    public ResponseEntity<List<Product>> getAllProduct() {
         try {
-            return ResponseEntity.ok(productMap.values());
+            return ResponseEntity.ok(productService.getAllProduct());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -32,102 +33,64 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     }
 
     @GetMapping("/products/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable(value = "id") String productId) {
+    public ResponseEntity<Product> getProductById(@PathVariable String id) {
         try {
-            Product product = productMap.get(productId);
-            return ResponseEntity.ok(product == null ? new Product() : product);
+            return ResponseEntity.ok(productService.getProductById(id));
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping("/products/add") // 新增商品
-    public ResponseEntity<Void> createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         try {
-            if (product.getProductID() == null) {
-                System.out.println("id:" + product.getProductID());
-                return ResponseEntity.badRequest().build();
-            }
-            if (productMap.containsKey(product.getProductID())) {
-                return ResponseEntity.unprocessableEntity().build();
-            }
-            productMap.put(product.getProductID(), product);
-            return ResponseEntity.status(201).build();
+            Product saved = productService.createProduct(product);
+            return ResponseEntity.status(201).body(saved);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+        catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 
     @PutMapping("/products/edit/{id}") // 修改商品
-    public ResponseEntity<Void> editProduct(@PathVariable String id, @RequestBody Product request) {
+    public ResponseEntity<Product> editProduct(@RequestBody Product request,@PathVariable String id) {
         try {
-            System.out.println(request.getProductID());
-            Product product = productMap.get(id);
-            if (product == null) {
-                return ResponseEntity.status(404).build(); // not found
-            }
-
-            product.setProductID(request.getProductID());
-            product.setSellerID(request.getSellerID());
-            product.setProductName(request.getProductName());
-            product.setProductDescription(request.getProductDescription());
-            product.setProductPrice(request.getProductPrice());
-            product.setProductImage(request.getProductImage());
-            product.setProductType(request.getProductType());
-            product.setProductStock(request.getProductStock());
-            product.setProductCategory(request.getProductCategory());
-            product.setProductStatus(request.getProductStatus());
-            product.setCreatedTime(request.getCreatedTime());
-            product.setUpdatedTime(request.getUpdatedTime());
-            product.setAuctionEndTime(request.getAuctionEndTime());
-            product.setNowHighestBid(request.getNowHighestBid());
-            product.setHighestBidderID(request.getHighestBidderID());
-            product.setViewCount(request.getViewCount());
-            product.setAverageRating(request.getAverageRating());
-            product.setReviewCount(request.getReviewCount());
-            product.setTotalSales(request.getTotalSales());
-
-            return ResponseEntity.ok().build();
+            Product update = productService.editProduct(request, id);
+            return ResponseEntity.ok(update);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+        catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).build(); // not found
         }
     }
 
     @PutMapping("/products/upload/{id}") // 上架商品
-    public ResponseEntity<Void> publishProduct(@PathVariable(value = "id") String productId) {
+    public ResponseEntity<Product> publishProduct(@PathVariable String id) {
         try {
-            Product product = productMap.get(productId);
-            if (product == null) {
-                return ResponseEntity.status(404).build(); // not found
-            }
-            product.setProductStatus(Product.ProductStatuses.ACTIVE);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(productService.publishProduct(id));
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @PutMapping("/products/withdraw/{id}") // 下架商品
-    public ResponseEntity<Void> withdrawProduct(@PathVariable(value = "id") String productId) {
+    public ResponseEntity<Product> withdrawProduct(@PathVariable String id) {
         try {
-            Product product = productMap.get(productId);
-            if (product == null) {
-                return ResponseEntity.status(404).build(); // not found
-            }
-            product.setProductStatus(Product.ProductStatuses.INACTIVE);
+            return ResponseEntity.ok(productService.withdrawProduct(id));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @DeleteMapping("/products/delete/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable String id) {
+        try {
+            productService.deleteProduct(id);
             return ResponseEntity.ok().build();
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

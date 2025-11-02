@@ -1,9 +1,14 @@
 package com.ntou.auctionSite.model;
 //日期時間
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Product {
+    @Id
+    @Field("ProductID")
     private String ProductID;               //產品ID
     private String SellerID;                //賣家ID
     private String ProductName;             //產品名稱
