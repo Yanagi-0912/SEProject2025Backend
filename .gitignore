@@ -57,4 +57,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables and Local Config ###
+src/main/resources/application-dev.yml
 src/main/resources/application.properties
