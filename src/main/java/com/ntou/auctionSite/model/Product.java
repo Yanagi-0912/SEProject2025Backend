@@ -1,9 +1,14 @@
 package com.ntou.auctionSite.model;
 //日期時間
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Product {
+    @Id
+    @Field("ProductID")
     private String ProductID;               //產品ID
     private String SellerID;                //賣家ID
     private String ProductName;             //產品名稱
@@ -23,7 +28,7 @@ public class Product {
     private double AverageRating;           //產品平均評分
     private int ReviewCount;                //產品評論數量
     private int TotalSales;                 //產品總銷售量
-    enum ProductStatuses { ACTIVE, INACTIVE, SOLD, BANNED }//有效、無效、已售出、已封鎖
+    public enum ProductStatuses { ACTIVE, INACTIVE, SOLD, BANNED }//有效、無效、已售出、已封鎖
 
     public Product() {
     }
