@@ -61,3 +61,4 @@ build/
 ### Environment Variables and Local Config ###
 src/main/resources/application-dev.yml
 src/main/resources/application.properties
+render-env-variables.txt
