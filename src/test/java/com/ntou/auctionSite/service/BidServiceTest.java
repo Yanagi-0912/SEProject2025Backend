@@ -39,7 +39,7 @@ public class BidServiceTest {
     //將時間格式化
     DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     @Test
-    public void testPlaceBid() {//這裡要改
+    public void testPlaceBid() {//模擬競標流程
 
         // 1建立拍賣商品
         Product auctionProduct = bidService.createAuction(100,endTime, "P105");

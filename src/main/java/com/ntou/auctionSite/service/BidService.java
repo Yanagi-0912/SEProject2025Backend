@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 //這是關於競標系統的service
 @Service
@@ -33,17 +31,30 @@ public class BidService {
         if(basicBidPrice<=0){
             throw new IllegalArgumentException("BidPrice must greater than 0!!!");
         }
+        if(auctionProduct.getProductStock()<=0){
+            throw new IllegalArgumentException("No available product in stock!!!");
+        }
         else{//設定價格 時間等等
             auctionProduct.setNowHighestBid(basicBidPrice);//記得先設定bid price
             auctionProduct.setProductPrice(basicBidPrice);
             auctionProduct.setAuctionEndTime(auctionEndTime);
             auctionProduct.setCreatedTime(LocalDateTime.now());
             auctionProduct.setProductType(ProductTypes.AUCTION);
+            return repository.save(auctionProduct);
         }
-        return repository.save(auctionProduct);
     }
     public List<Product> getAllAuctionProduct(){//取得所有拍賣中的商品
-        return repository.findByProductType(ProductTypes.AUCTION);//ACTIVE應該就是指拍賣中吧
+        try{
+            List<Product> auctionProductList=repository.findByProductType(ProductTypes.AUCTION);//ACTIVE應該就是指拍賣中吧
+            if(auctionProductList.isEmpty()){
+                throw new NoSuchElementException("No auctionProduct found!");
+            }
+            return  auctionProductList;
+        }
+        catch(Exception e){
+            System.err.println("Error fetching auction products: " + e.getMessage());
+            return Collections.emptyList();//回傳一個不可更改的空list
+        }
     }
     public void placeBid(int bidPrice,String productID,String bidderID){//買家出價
         Product auctionProduct = productService.getProductById(productID);

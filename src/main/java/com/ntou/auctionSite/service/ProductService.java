@@ -13,7 +13,17 @@ public class ProductService {
     private final Map<String, Product> productMap = new HashMap<>();
 
     public List<Product> getAllProduct(){
-            return repository.findAll();
+            try{
+                List<Product> productList=repository.findAll();
+                if(productList.isEmpty()){
+                    throw new NoSuchElementException("No product found!");
+                }
+                return productList;
+            }
+            catch(Exception e){
+            System.err.println("Error fetching products: " + e.getMessage());
+            return Collections.emptyList();//回傳一個不可更改的空list
+        }
     }
 
     public Product getProductById(String ProductID) {

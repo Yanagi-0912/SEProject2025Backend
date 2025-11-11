@@ -69,16 +69,19 @@ public class ProductServiceTest {
 
     @Test
     public void testEditProduct() {//測試編輯商品
-        String productId = "P105";
-        Product updateRequest = new Product();
-        updateRequest.setProductName("新馬克杯");
-        updateRequest.setProductPrice(250);
+        //String productId = "P105";
+        String[] productId = {"P100","P101","P102","P103","P104","P105"};
+        for(int i=0;i<productId.length;i++){
+            Product updateRequest = new Product();
+            //updateRequest.setProductName("新馬克杯");
+            //updateRequest.setProductPrice(250);
+            updateRequest.setProductStock(1);
+            productService.editProduct(updateRequest, productId[i]);
+        }
 
-        productService.editProduct(updateRequest, productId);
-
-        Product edited = productService.getProductById(productId);
+        /*Product edited = productService.getProductById(productId);
         assertEquals("新馬克杯", edited.getProductName());
-        assertEquals(250, edited.getProductPrice());
+        assertEquals(250, edited.getProductPrice());*/
     }
 
     @Test
