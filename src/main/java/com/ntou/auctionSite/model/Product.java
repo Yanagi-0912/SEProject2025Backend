@@ -8,17 +8,16 @@ import java.time.format.DateTimeFormatter;
 
 public class Product {
     @Id
-    @Field("ProductID")
-    private String ProductID;               //產品ID
+    private String productID;               //產品ID
     private String SellerID;                //賣家ID
     private String ProductName;             //產品名稱
     private String ProductDescription;      //產品描述
     private int ProductPrice;               //產品價格
     private String ProductImage;            //產品圖片URL
-    private ProductTypes ProductType;       //產品類型 (DIRECT, AUCTION)
+    private ProductTypes productType;       //產品類型 (DIRECT, AUCTION)
     private int ProductStock;               //產品庫存量
     private String ProductCategory;         //產品類別
-    private ProductStatuses ProductStatus;  //產品狀態
+    private ProductStatuses productStatus;  //產品狀態
     private LocalDateTime CreatedTime;      //產品建立時間
     private LocalDateTime UpdatedTime;      //產品更新時間
     private LocalDateTime AuctionEndTime;   //拍賣結束時間 (僅限拍賣產品)
@@ -34,8 +33,8 @@ public class Product {
     }
 
     //產品ID
-    public String getProductID() { return ProductID; }
-    public void setProductID(String productID) { ProductID = productID; }
+    public String getProductID() { return productID; }
+    public void setProductID(String productID) { this.productID = productID; }
     //賣家ID
     public String getSellerID() { return SellerID; }
     public void setSellerID(String sellerID) { SellerID = sellerID; }
@@ -52,8 +51,8 @@ public class Product {
     public String getProductImage() { return ProductImage; }
     public void setProductImage(String productImage) { ProductImage = productImage; }
     //產品類型
-    public ProductTypes getProductType() { return ProductType; }
-    public void setProductType(ProductTypes productType) { ProductType = productType; }
+    public ProductTypes getProductType() { return productType; }
+    public void setProductType(ProductTypes productType) { this.productType = productType; }
     //產品庫存量
     public int getProductStock() { return ProductStock; }
     public void setProductStock(int productStock) { ProductStock = productStock; }
@@ -61,8 +60,8 @@ public class Product {
     public String getProductCategory() { return ProductCategory; }
     public void setProductCategory(String productCategory) { ProductCategory = productCategory; }
     //產品狀態
-    public ProductStatuses getProductStatus() { return ProductStatus; }
-    public void setProductStatus(ProductStatuses productStatus) { ProductStatus = productStatus; }
+    public ProductStatuses getProductStatus() { return productStatus; }
+    public void setProductStatus(ProductStatuses productStatus) { this.productStatus = productStatus; }
     //產品建立時間
     public LocalDateTime getCreatedTime() { return CreatedTime; }
     public void setCreatedTime(LocalDateTime createdTime) { CreatedTime = createdTime; }

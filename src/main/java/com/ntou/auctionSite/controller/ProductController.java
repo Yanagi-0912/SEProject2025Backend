@@ -16,6 +16,7 @@ import com.ntou.auctionSite.service.ProductService;
 //      "productPrice": 100,
 //      "productType": "DIRECT"
 // }
+@CrossOrigin("https://se-project2025-frontend-8qpw.vercel.app/")
 @RestController
 public class ProductController { // 負責處理商品新增、上下架、查看、修改的class
     @Autowired
@@ -83,7 +84,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             return ResponseEntity.notFound().build();
         }
     }
-    @DeleteMapping("/products/delete/{id}")
+    @DeleteMapping("/products/delete/{id}")//刪除產品
     public ResponseEntity<?> deleteProduct(@PathVariable String id) {
         try {
             productService.deleteProduct(id);
