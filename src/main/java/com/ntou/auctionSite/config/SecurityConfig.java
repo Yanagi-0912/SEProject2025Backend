@@ -39,6 +39,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())                          // 禁用 CSRF 保護
             .authorizeHttpRequests( auth -> { auth
                     .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // 允許訪問 Swagger UI
                     .anyRequest().authenticated();
                     }
             )
