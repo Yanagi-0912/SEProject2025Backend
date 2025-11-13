@@ -16,7 +16,7 @@ import com.ntou.auctionSite.service.ProductService;
 //      "productPrice": 100,
 //      "productType": "DIRECT"
 // }
-@CrossOrigin("https://se-project2025-frontend-8qpw.vercel.app/")
+@CrossOrigin("http://localhost:5173")
 @RestController
 public class ProductController { // 負責處理商品新增、上下架、查看、修改的class
     @Autowired
