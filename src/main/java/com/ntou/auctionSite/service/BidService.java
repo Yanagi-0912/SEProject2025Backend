@@ -25,8 +25,10 @@ public class BidService {
     public Product createAuction(int basicBidPrice, LocalDateTime auctionEndTime,String productID){//設定起標價 截止時間
         Product auctionProduct=productService.getProductById(productID);
         if (auctionProduct==null) {
-            System.out.println("Product not found!");
-            return null;
+            throw new NoSuchElementException("Product not found!");
+        }
+        if (auctionProduct.getProductStatus()!=Product.ProductStatuses.ACTIVE) {
+            throw new NoSuchElementException("Product not avaliable!");
         }
         if(basicBidPrice<=0){
             throw new IllegalArgumentException("BidPrice must greater than 0!!!");
@@ -61,15 +63,13 @@ public class BidService {
         if(auctionProduct.getProductStatus()!=Product.ProductStatuses.ACTIVE &&
            auctionProduct.getProductType()!=ProductTypes.AUCTION
         ){
-            System.out.println("Product is not for auction or product is inactive!");
-            return;
+            throw new IllegalArgumentException("Product is not for auction or product is inactive!");
         }
         if (auctionProduct == null) {
-            System.out.println("Product not found!");
-            return;
+            throw new NoSuchElementException("Product not found!");
         }
         if(bidPrice<=0){
-            System.out.println("BidPrice must greater than 0!!!");
+            throw new IllegalArgumentException("BidPrice must greater than 0!!!");
         }
         else if(bidPrice<=auctionProduct.getNowHighestBid()){
             throw new IllegalArgumentException("Bid must be higher than current highest bid");
@@ -101,9 +101,17 @@ public class BidService {
     public void terminateAuction(String productID){//結束競拍
         Product auctionProduct = productService.getProductById(productID);
         if (auctionProduct==null) {
-            System.out.println("Product not found!");
-            return;
+            throw new NoSuchElementException("Product not found: " + productID);
         }
+
+        if (auctionProduct.getProductType() != ProductTypes.AUCTION) {//必須檢查是拍賣商品
+            throw new IllegalArgumentException("Product is not an auction item");
+        }
+
+        if (auctionProduct.getAuctionEndTime() == null) {
+            throw new IllegalStateException("Auction end time is not set for product: " + productID);
+        }
+
         LocalDateTime currentTime=LocalDateTime.now();
         //compareTo比較兩個localdate，>0表示前者比較晚發生
         if(currentTime.compareTo(auctionProduct.getAuctionEndTime()) >0){
@@ -113,13 +121,19 @@ public class BidService {
             repository.save(auctionProduct);
             createOrder(auctionProduct);
         }
+        else{
+            throw new IllegalStateException("The auction can't be terminate! \n " +
+                    "Because auction end time is: "+auctionProduct.getAuctionEndTime()+
+                    " but current time is: "+LocalDateTime.now()
+            );
+        }
     }
 
     public Order createOrder(Product auctionProduct){//結束後系統要自動建立訂單
         if(auctionProduct.getProductStatus()==Product.ProductStatuses.SOLD &&
                 auctionProduct.getHighestBidderID()!=null){
             Order order = new Order();
-            order.setOrderID(UUID.randomUUID().toString());//訂單用隨機id
+            order.setOrderID(UUID.randomUUID().toString().substring(0, 10).toUpperCase());//訂單用隨機id
             order.setBuyerID(auctionProduct.getHighestBidderID());
             order.setSellerID(auctionProduct.getSellerID());
             Cart cart = new Cart();

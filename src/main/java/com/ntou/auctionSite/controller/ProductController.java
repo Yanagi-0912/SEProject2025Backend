@@ -22,76 +22,98 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     @Autowired
     private ProductService productService;
 
+    //<?>表示可以是任何型態,前端可以提供第幾頁、每頁大小
     @GetMapping("/products/")
-    public ResponseEntity<List<Product>> getAllProduct() {
+    public ResponseEntity<?> getAllProduct(@RequestParam(defaultValue = "1") int page,
+                                           @RequestParam(defaultValue = "10") int pageSize) {
         try {
-            return ResponseEntity.ok(productService.getAllProduct());
+            List<Product> products = productService.getProductsByPage(page, pageSize);
+            return ResponseEntity.ok(products);
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.status(500).body("Error fetching products: " + e.getMessage());
         }
     }
 
     @GetMapping("/products/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable String id) {
+    public ResponseEntity<?> getProductById(@PathVariable String id) {
         try {
             return ResponseEntity.ok(productService.getProductById(id));
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Product not found with ID: " + id);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 
     @PostMapping("/products/add") // 新增商品
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<?> createProduct(@RequestBody Product product) {
         try {
             Product saved = productService.createProduct(product);
-            return ResponseEntity.status(201).body(saved);
+            return ResponseEntity.status(201).body("Product created successfully! ProductID: " + saved.getProductID());
         }
         catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Error creating product: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 
     @PutMapping("/products/edit/{id}") // 修改商品
-    public ResponseEntity<Product> editProduct(@RequestBody Product request,@PathVariable String id) {
+    public ResponseEntity<?> editProduct(@RequestBody Product request,@PathVariable String id) {
         try {
             Product update = productService.editProduct(request, id);
-            return ResponseEntity.ok(update);
+            return ResponseEntity.ok("Product updated successfully! ProductID: " + update.getProductID());
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.status(404).build(); // not found
+            return ResponseEntity.status(404).body("Product not found with ID: " + id); // not found
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 
     @PutMapping("/products/upload/{id}") // 上架商品
-    public ResponseEntity<Product> publishProduct(@PathVariable String id) {
+    public ResponseEntity<?> publishProduct(@PathVariable String id) {
         try {
-            return ResponseEntity.ok(productService.publishProduct(id));
+            Product published = productService.publishProduct(id);
+            return ResponseEntity.ok("Product published successfully! ProductID: " + published.getProductID());
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Product not found with ID: " + id);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 
     @PutMapping("/products/withdraw/{id}") // 下架商品
-    public ResponseEntity<Product> withdrawProduct(@PathVariable String id) {
+    public ResponseEntity<?> withdrawProduct(@PathVariable String id) {
         try {
-            return ResponseEntity.ok(productService.withdrawProduct(id));
+            Product withdrawn = productService.withdrawProduct(id);
+            return ResponseEntity.ok("Product withdrawn successfully! ProductID: " + withdrawn.getProductID());
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Product not found with ID: " + id);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
     @DeleteMapping("/products/delete/{id}")//刪除產品
     public ResponseEntity<?> deleteProduct(@PathVariable String id) {
         try {
             productService.deleteProduct(id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("Product deleted successfully! ProductID: " + id);
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Product not found with ID: " + id);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 }

@@ -9,8 +9,8 @@ import java.time.format.DateTimeFormatter;
 public class Product {
     @Id
     private String productID;               //產品ID
-    private String SellerID;                //賣家ID
-    private String ProductName;             //產品名稱
+    private String sellerID;                //賣家ID
+    private String productName;             //產品名稱
     private String ProductDescription;      //產品描述
     private int ProductPrice;               //產品價格
     private String ProductImage;            //產品圖片URL
@@ -36,11 +36,11 @@ public class Product {
     public String getProductID() { return productID; }
     public void setProductID(String productID) { this.productID = productID; }
     //賣家ID
-    public String getSellerID() { return SellerID; }
-    public void setSellerID(String sellerID) { SellerID = sellerID; }
+    public String getSellerID() { return sellerID; }
+    public void setSellerID(String sellerID) { this.sellerID = sellerID; }
     //產品名稱
-    public String getProductName() { return ProductName; }
-    public void setProductName(String productName) { ProductName = productName; }
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
     //產品描述
     public String getProductDescription() { return ProductDescription; }
     public void setProductDescription(String productDescription) { ProductDescription = productDescription; }

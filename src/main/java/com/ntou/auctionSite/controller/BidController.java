@@ -13,14 +13,15 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@CrossOrigin("https://se-project2025-frontend-8qpw.vercel.app/")
+//@CrossOrigin("https://se-project2025-frontend-8qpw.vercel.app/")
+@CrossOrigin("http://localhost:5173")
 @RestController
 public class BidController {
     @Autowired BidService bidservice;
     @Autowired ProductService productService;
     @PostMapping("/createAucs/{id}")
-    public ResponseEntity<Product> createAuction(//新增拍賣商品
-            @PathVariable String id,
+    public ResponseEntity<?> createAuction(//新增拍賣商品
+            @PathVariable String id,//productID
             @RequestParam (name="price") int basicBidPrice,
             @RequestParam (name="time") String endTime
     ){
@@ -28,26 +29,35 @@ public class BidController {
             //time要符合yyyy/MM/ddTHH:mm:ss格式
             LocalDateTime auctionEndTime = LocalDateTime.parse(endTime);
             Product auctionProduct=bidservice.createAuction(basicBidPrice,auctionEndTime,id);
-            return ResponseEntity.ok(auctionProduct);
+            return ResponseEntity.ok("Auction created successfully! ProductID: " + auctionProduct.getProductID());
         }
         catch (DateTimeParseException e) {//Datetime解析錯誤時的例外處理
             System.err.println("Error parsing date: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Date format error: " + e.getMessage());
         }
-        catch(IllegalArgumentException | IllegalStateException e){
-            return ResponseEntity.badRequest().build();
+        catch (NoSuchElementException e) {
+            return ResponseEntity.badRequest().body("Product error: " + e.getMessage());
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Illegal argument: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body("Illegal state: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
 
     }
 
     @GetMapping("/auctions/")
-    public ResponseEntity<List<Product>>getAllAuctionProduct(){//取得所有拍賣中的商品
+    public ResponseEntity<?>getAllAuctionProduct(){//取得所有拍賣中的商品
         try {
-            return ResponseEntity.ok(bidservice.getAllAuctionProduct());
+            List<Product> products = bidservice.getAllAuctionProduct();
+            return ResponseEntity.ok("Found " + products.size() + " auction products.");
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.status(500).body("Error fetching auction products: " + e.getMessage());
         }
     }
 
@@ -62,7 +72,7 @@ public class BidController {
             return ResponseEntity.ok("Bid placed successfully!");
         }
         catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body("Bid error: " + e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
@@ -76,7 +86,7 @@ public class BidController {
             return ResponseEntity.ok("Auction terminated");
         }
         catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body("Termination error: " + e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
@@ -84,21 +94,24 @@ public class BidController {
     }
 
     @PostMapping("/orders/{productId}")
-    public ResponseEntity<Order>createOrder(@PathVariable String productId){
+    public ResponseEntity<?>createOrder(@PathVariable String productId){
         try{
             Product auctionProduct=productService.getProductById(productId);
             Order order=bidservice.createOrder(auctionProduct);
             if (order == null) {
-                return ResponseEntity.badRequest().build(); // 商品狀態不符或出價者為空
+                return ResponseEntity.badRequest().body("Order creation failed: product status not valid or no bidder."); // 商品狀態不符或出價者為空
             }
-            return ResponseEntity.ok(order);
+            return ResponseEntity.ok("Order created successfully! OrderID: " + order.getOrderID());
 
         }
         catch (NoSuchElementException e){
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Product not found: " + productId);
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(400).body("Illegal state for order creation: " + e.getMessage());
         }
         catch (Exception e) {
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 }

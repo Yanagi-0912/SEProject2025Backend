@@ -1,0 +1,31 @@
+
+spring:
+  application:
+    name: auctionSite
+
+  data:
+      uri: "mongodb+srv://nhpss100032:bayou064062@keelungsightdb.3vxi8qa.mongodb.net/?appName=KeelungSightDB"
+      database: KeelungSightDB
+
+  security:
+    debug: false
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: always
+
+jwt:
+  secret: "myLocalSas15sadoqwjoqecretKey123AAzadadADAWasdasdASD"
+  expiration: 86400000
+
+cors:
+  allowed-origins: "https://se-project2025-frontend-8qpw.vercel.app"
+
+logging:
+  level:
+    org:
+      springframework:
+        security: INFO
+        web: INFO
