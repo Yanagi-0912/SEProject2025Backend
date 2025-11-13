@@ -78,7 +78,6 @@
         </dependency>
 
         <!-- Lombok (簡化程式碼) -->
-        <!-- Lombok (簡化程式碼) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
