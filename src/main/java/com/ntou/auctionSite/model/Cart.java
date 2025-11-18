@@ -16,8 +16,8 @@ public class Cart {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CartItem {
-        private int Quantity;
         private String productID;
+        private int Quantity;
     }
 }
 
