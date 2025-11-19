@@ -11,7 +11,7 @@ public class Order {
     private LocalDateTime OrderTime;    //訂單時間
     private ProductTypes OrderType;     //訂單類型
     private OrderStatuses OrderStatus;  //訂單狀態
-    enum OrderStatuses { PENDING, COMPLETED, CANCELLED, REFUNDED } //待處理、已完成、已取消、已退款
+    public enum OrderStatuses { PENDING, COMPLETED, CANCELLED, REFUNDED } //待處理、已完成、已取消、已退款
 
 
 

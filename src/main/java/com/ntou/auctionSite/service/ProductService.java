@@ -52,9 +52,9 @@ public class ProductService {
             randomId = "PROD" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();//先用8位就好
         }
         while (repository.findById(randomId).isPresent());
-        Optional<Product> existing = repository.findBySellerIDAndProductName(
+        List<Product> existing = repository.findBySellerIDAndProductName(
                 product.getSellerID(), product.getProductName());
-        if(existing.isPresent()) {
+        if(!existing.isEmpty()) {
             throw new IllegalStateException("同一個賣家已經存在同名商品！");
         }
         product.setProductID(randomId);

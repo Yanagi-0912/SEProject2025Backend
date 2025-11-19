@@ -8,7 +8,7 @@ import com.ntou.auctionSite.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
+import com.ntou.auctionSite.service.CartService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -21,7 +21,9 @@ public class BidService {
 
     @Autowired
     private ProductService productService;
+    // 用來格式化時間輸出
     DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    // 建立拍賣商品：設定起標價與競標截止時間
     public Product createAuction(int basicBidPrice, LocalDateTime auctionEndTime,String productID){//設定起標價 截止時間
         Product auctionProduct=productService.getProductById(productID);
         if (auctionProduct==null) {
@@ -45,7 +47,8 @@ public class BidService {
             return repository.save(auctionProduct);
         }
     }
-    public List<Product> getAllAuctionProduct(){//取得所有拍賣中的商品
+    //取得所有拍賣中的商品
+    public List<Product> getAllAuctionProduct(){
         try{
             List<Product> auctionProductList=repository.findByProductType(ProductTypes.AUCTION);//ACTIVE應該就是指拍賣中吧
             if(auctionProductList.isEmpty()){
@@ -58,8 +61,10 @@ public class BidService {
             return Collections.emptyList();//回傳一個不可更改的空list
         }
     }
-    public void placeBid(int bidPrice,String productID,String bidderID){//買家出價
+    //買家出價
+    public void placeBid(int bidPrice,String productID,String bidderID){
         Product auctionProduct = productService.getProductById(productID);
+        // 必須是 ACTIVE 且為 AUCTION 商品才可以拍賣
         if(auctionProduct.getProductStatus()!=Product.ProductStatuses.ACTIVE &&
            auctionProduct.getProductType()!=ProductTypes.AUCTION
         ){
@@ -83,6 +88,7 @@ public class BidService {
             System.out.println("Bid placed successfully!");
         }
     }
+    // 每 5 秒檢查一次拍賣是否到期（自動排程）
     @Scheduled(fixedRate = 5000)//Scheduled用來設定5秒檢查一次
     public void checkAndTerminateAuctions() {
         List<Product> auctionList = repository.findByProductType(ProductTypes.AUCTION);
@@ -92,12 +98,12 @@ public class BidService {
             if (p.getProductStatus() == Product.ProductStatuses.ACTIVE &&
                     p.getAuctionEndTime() != null &&
                     now.isAfter(p.getAuctionEndTime())) {
-
+                // 時間到,自動終止拍賣
                 terminateAuction(p.getProductID());
             }
         }
     }
-
+    // 終止拍賣（時間到後執行）
     public void terminateAuction(String productID){//結束競拍
         Product auctionProduct = productService.getProductById(productID);
         if (auctionProduct==null) {
@@ -119,6 +125,7 @@ public class BidService {
             auctionProduct.setProductStatus(Product.ProductStatuses.SOLD);//設定為已售出
             System.out.println("Auction winner is ID:"+auctionProduct.getHighestBidderID());
             repository.save(auctionProduct);
+            // 自動建立訂單
             createOrder(auctionProduct);
         }
         else{
@@ -128,18 +135,18 @@ public class BidService {
             );
         }
     }
-
+    // 拍賣結束後自動建立訂單
     public Order createOrder(Product auctionProduct){//結束後系統要自動建立訂單
         if(auctionProduct.getProductStatus()==Product.ProductStatuses.SOLD &&
                 auctionProduct.getHighestBidderID()!=null){
             Order order = new Order();
+            // 訂單編號：用10碼隨機id
             order.setOrderID(UUID.randomUUID().toString().substring(0, 10).toUpperCase());//訂單用隨機id
             order.setBuyerID(auctionProduct.getHighestBidderID());
             order.setSellerID(auctionProduct.getSellerID());
-            Cart cart = new Cart();
-            cart.addProduct(auctionProduct.getProductID());
-            order.setCart(cart);
             order.setOrderType(ProductTypes.AUCTION);
+            order.setOrderTime(LocalDateTime.now());
+            order.setOrderStatus(Order.OrderStatuses.PENDING);
             return order;
         }
         return null;
