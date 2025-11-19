@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: auctionSite
+
+  data:
+    mongodb:
+      uri: mongodb+srv://your-username:your-password@your-cluster.mongodb.net/?retryWrites=true&w=majority&appName=YourApp
+      database: mongodb
+
+  security:
+    debug: true
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: always
+
+jwt:
+  secret: your-jwt-secret-key-here-at-least-256-bits
+  expiration: 86400000
+
+cors:
+  allowed-origins: https://se-project2025-frontend-8qpw.vercel.app,http://localhost:3000
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+        web: DEBUG
+

@@ -57,10 +57,8 @@ build/
 
 ### VS Code ###
 .vscode/
-src/main/resources/application.properties
-src/main/resources/application.yml
 
-*.png
-*.jpg
-*.jpeg
-*.gif
+### Environment Variables and Local Config ###
+src/main/resources/application-dev.yml
+src/main/resources/application.properties
+render-env-variables.txt

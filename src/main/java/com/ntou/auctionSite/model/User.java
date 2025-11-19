@@ -36,7 +36,9 @@ public class User implements UserDetails {
 
     private Role role = Role.USER;  // 新增這行
 
-    // 實作 UserDetails
+    private Cart cart = new Cart();
+
+    // 實作 UserDetails (這裡有空要回來檢視一下有沒有必要 因為後來沒有分買家賣家)
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
@@ -74,7 +76,6 @@ public class User implements UserDetails {
 
     // 拍賣網站欄位
     private String userNickname;
-    private Cart cart;
     private String address;
     private String phoneNumber;
     private float averageRating;
