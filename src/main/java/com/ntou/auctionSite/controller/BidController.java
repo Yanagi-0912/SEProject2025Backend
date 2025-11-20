@@ -1,6 +1,5 @@
 package com.ntou.auctionSite.controller;
 
-import com.ntou.auctionSite.model.Order;
 import com.ntou.auctionSite.model.Product;
 import com.ntou.auctionSite.service.BidService;
 import com.ntou.auctionSite.service.ProductService;
@@ -28,7 +27,7 @@ public class BidController {
     @Autowired BidService bidservice;
     @Autowired ProductService productService;
 
-    @PostMapping("/createAucs/{id}")
+    @PostMapping("api/createAucs/{id}")
     @Operation(
             summary = "建立拍賣商品",
             description = "將商品設定為拍賣模式，需指定起標價和結束時間。時間格式為 ISO 8601 (yyyy-MM-ddTHH:mm:ss)"
@@ -92,7 +91,7 @@ public class BidController {
 
     }
 
-    @GetMapping("/auctions/")
+    @GetMapping("api/auctions/")
     @Operation(
             summary = "取得所有拍賣中的商品",
             description = "查詢所有正在進行拍賣的商品列表"
@@ -125,7 +124,7 @@ public class BidController {
         }
     }
 
-    @PostMapping("/bids/{id}")
+    @PostMapping("api/bids/{id}")
     @Operation(
             summary = "競標出價",
             description = "對指定商品進行出價，出價金額必須高於當前最高出價"
@@ -176,7 +175,7 @@ public class BidController {
         }
     }
 
-    @PutMapping("/{id}/terminate")
+    @PutMapping("api/{id}/terminate")
     @Operation(
             summary = "結束拍賣",
             description = "手動結束指定商品的拍賣，拍賣結束後將無法再出價"
@@ -222,7 +221,7 @@ public class BidController {
         }
     }
 
-    @PostMapping("/orders/{productId}")
+    @PostMapping("api/orders/{productId}")
     @Operation(
             summary = "建立拍賣訂單",
             description = "拍賣結束後，為得標者建立訂單"
@@ -272,15 +271,4 @@ public class BidController {
             }
             return ResponseEntity.ok("Order created successfully! OrderID: " + order.getOrderID());
 
-        }
-        catch (NoSuchElementException e){
-            return ResponseEntity.status(404).body("Product not found: " + productId);
-        }
-        catch (IllegalStateException e) {
-            return ResponseEntity.status(400).body("Illegal state for order creation: " + e.getMessage());
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
-        }
-    }
 }

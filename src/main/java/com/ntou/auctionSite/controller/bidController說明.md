@@ -1,20 +1,17 @@
 postman測試:
 createAuction:
 POST:
-http://localhost:8080/createAucs/P104?price=878&time=2025-11-19T10:30:00
+http://localhost:8080/api/createAucs/P104?price=878&time=2025-11-19T10:30:00
 
 getAllAuctionProduct:
 GET:
-http://localhost:8080/auctions/
+http://localhost:8080/api/auctions/
 
 placeBid
 POST:
-http://localhost:8080/bids/P105?price=150&bidderId=buyer002
+http://localhost:8080/api/bids/P105?price=150&bidderId=buyer002
 
 terminateAuction
 PUT:
-http://localhost:8080/P105/terminate
+http://localhost:8080/api/P105/terminate
 
-createOrder
-POST:
-http://localhost:8080/orders/P105

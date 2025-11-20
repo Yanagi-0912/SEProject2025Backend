@@ -21,6 +21,12 @@ public class BidService {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private CartService cartService;
     // 用來格式化時間輸出
     DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     // 建立拍賣商品：設定起標價與競標截止時間
@@ -126,7 +132,13 @@ public class BidService {
             System.out.println("Auction winner is ID:"+auctionProduct.getHighestBidderID());
             repository.save(auctionProduct);
             // 自動建立訂單
-            createOrder(auctionProduct);
+            Cart cart = new Cart();
+            //先放進購物車
+            Cart.CartItem cartItem = new Cart.CartItem(auctionProduct.getProductID(), 1);
+            cart.getItems().add(cartItem);
+            Order order = new Order();
+            order.setCart(cart);
+            orderService.createOrder(order,auctionProduct.getHighestBidderID(),ProductTypes.AUCTION);
         }
         else{
             throw new IllegalStateException("The auction can't be terminate! \n " +
@@ -135,20 +147,6 @@ public class BidService {
             );
         }
     }
-    // 拍賣結束後自動建立訂單
-    public Order createOrder(Product auctionProduct){//結束後系統要自動建立訂單
-        if(auctionProduct.getProductStatus()==Product.ProductStatuses.SOLD &&
-                auctionProduct.getHighestBidderID()!=null){
-            Order order = new Order();
-            // 訂單編號：用10碼隨機id
-            order.setOrderID(UUID.randomUUID().toString().substring(0, 10).toUpperCase());//訂單用隨機id
-            order.setBuyerID(auctionProduct.getHighestBidderID());
-            order.setSellerID(auctionProduct.getSellerID());
-            order.setOrderType(ProductTypes.AUCTION);
-            order.setOrderTime(LocalDateTime.now());
-            order.setOrderStatus(Order.OrderStatuses.PENDING);
-            return order;
-        }
-        return null;
-    }
+
+
 }

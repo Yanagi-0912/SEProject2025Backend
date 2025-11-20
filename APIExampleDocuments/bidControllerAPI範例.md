@@ -2,20 +2,20 @@
 
 ## 創建拍賣
 - **方法:** POST  
-- **URL:** `http://localhost:8080/createAucs/P104?price=878&time=2025-11-19T10:30:00`
+- **URL:** `http://localhost:8080/api/createAucs/P104?price=878&time=2025-11-19T10:30:00`
 
 ## 取得所有拍賣商品
 - **方法:** GET  
-- **URL:** `http://localhost:8080/auctions/`
+- **URL:** `http://localhost:8080/api/auctions/`
 
 ## 出價
 - **方法:** POST  
-- **URL:** `http://localhost:8080/bids/P105?price=150&bidderId=buyer002`
+- **URL:** `http://localhost:8080/api/bids/P105?price=150&bidderId=buyer002`
 
 ## 結束拍賣
 - **方法:** PUT  
-- **URL:** `http://localhost:8080/P105/terminate`
+- **URL:** `http://localhost:8080/api/P105/terminate`
 
 ## 創建訂單
 - **方法:** POST  
-- **URL:** `http://localhost:8080/orders/P105`
+- **URL:** `http://localhost:8080/api/orders/P105`

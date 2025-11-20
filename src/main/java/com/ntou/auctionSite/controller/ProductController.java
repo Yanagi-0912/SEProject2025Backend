@@ -24,7 +24,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     private ProductService productService;
 
     //<?>表示可以是任何型態,前端可以提供第幾頁、每頁大小
-    @GetMapping("/products/")
+    @GetMapping("api/products/")
     @Operation(
             summary = "取得商品列表（分頁）",
             description = "分頁查詢所有商品，支援自訂每頁商品數量"
@@ -64,7 +64,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @GetMapping("/products/{id}")
+    @GetMapping("api/products/{id}")
     @Operation(
             summary = "取得單一商品資訊",
             description = "根據商品 ID 查詢商品詳細資訊"
@@ -112,7 +112,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @PostMapping("/products/add") // 新增商品
+    @PostMapping("api/products/add") // 新增商品
     @Operation(
             summary = "新增商品",
             description = "建立新商品，商品預設狀態為 PENDING（待上架）"
@@ -168,7 +168,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @PutMapping("/products/edit/{id}") // 修改商品
+    @PutMapping("api/products/edit/{id}") // 修改商品
     @Operation(
             summary = "修改商品資訊",
             description = "更新商品的基本資訊（名稱、價格、描述等）"
@@ -226,7 +226,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @PutMapping("/products/upload/{id}") // 上架商品
+    @PutMapping("api/products/upload/{id}") // 上架商品
     @Operation(
             summary = "上架商品",
             description = "將商品狀態改為 AVAILABLE（已上架），使商品可供購買"
@@ -272,7 +272,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @PutMapping("/products/withdraw/{id}") // 下架商品
+    @PutMapping("api/products/withdraw/{id}") // 下架商品
     @Operation(
             summary = "下架商品",
             description = "將商品狀態改為 UNAVAILABLE（已下架），商品將不可購買"
@@ -317,7 +317,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
-    @DeleteMapping("/products/delete/{id}")//刪除產品
+    @DeleteMapping("api/products/delete/{id}")//刪除產品
     @Operation(
             summary = "刪除商品",
             description = "永久刪除商品資料"
