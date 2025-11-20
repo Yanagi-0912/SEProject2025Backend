@@ -220,7 +220,7 @@ public class BidController {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
-
+    /*這裡我先註解掉
     @PostMapping("api/orders/{productId}")
     @Operation(
             summary = "建立拍賣訂單",
@@ -271,4 +271,15 @@ public class BidController {
             }
             return ResponseEntity.ok("Order created successfully! OrderID: " + order.getOrderID());
 
+        }
+        catch (NoSuchElementException e){
+            return ResponseEntity.status(404).body("Product not found: " + productId);
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(400).body("Illegal state for order creation: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
+        }
+    }*/
 }
