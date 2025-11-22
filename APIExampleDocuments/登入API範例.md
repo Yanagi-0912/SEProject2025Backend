@@ -16,7 +16,7 @@
 ```json
 {
 "username":"7bb1c",
-"password":"1234asdasd",
+"password":"1234asdasd"
 
 }
 ```

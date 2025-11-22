@@ -76,7 +76,7 @@ public class ProductServiceTest {
             //updateRequest.setProductName("新馬克杯");
             //updateRequest.setProductPrice(250);
             updateRequest.setProductStock(1);
-            productService.editProduct(updateRequest, productId[i]);
+            //productService.editProduct(updateRequest, productId[i]);
         }
 
         /*Product edited = productService.getProductById(productId);

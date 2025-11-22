@@ -6,7 +6,6 @@
 - **Body (JSON):** 
 ```json
 {
-  "sellerID": "P003",
   "productName": "三星S26",
   "productPrice": 7000,
   "productType": "DIRECT",
@@ -30,10 +29,9 @@
 
 ## 編輯商品 
 - **方法:** PUT 
-- **URL:** http://localhost:8080/api/products/edit/P001 
+- **URL:** http://localhost:8080/api/products/edit/PROD24808AB6
  ```json 
 { 
-  "sellerID": "S001", 
   "productName": "餅乾(升級版)", 
   "productPrice": 120, 
   "productType": "DIRECT", 
@@ -43,7 +41,7 @@
 ```
 ## 上架商品 
 - **方法:**PUT
-- **URL:** http://localhost:8080/api/products/upload/P001將
+- **URL:** http://localhost:8080/api/products/upload/P001
 
 ## 下架商品 
 - **方法:** PUT
@@ -52,3 +50,4 @@
 ## 刪除商品
 - **方法:**  DELETE 
 - **URL:** http://localhost:8080/api/products/delete/P001 
+2025/11/22我改了一下api，get/以外的api會檢查目前user和sellerID一不一樣

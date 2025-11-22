@@ -1,4 +1,5 @@
 package com.ntou.auctionSite.service;
+import com.ntou.auctionSite.dto.EditProductRequest;
 import com.ntou.auctionSite.model.Product;
 import com.ntou.auctionSite.model.ProductTypes;
 import com.ntou.auctionSite.repository.ProductRepository;
@@ -46,7 +47,7 @@ public class ProductService {
         return allProducts.subList(fromIndex, toIndex);
     }
 
-    public Product createProduct(Product product){//創建商品
+    public Product createProduct(Product product,String currentUserId){//創建商品
         String randomId;
         do {
             randomId = "PROD" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();//先用8位就好
@@ -57,64 +58,64 @@ public class ProductService {
         if(!existing.isEmpty()) {
             throw new IllegalStateException("同一個賣家已經存在同名商品！");
         }
+        product.setSellerID(currentUserId);
         product.setProductID(randomId);
         product.setCreatedTime(LocalDateTime.now());
         validateProductFields(product);//驗證合法性
         return repository.save(product);
     }
+    public Product editProduct(String productId, EditProductRequest request, String currentUserId) {
+        Product product = getProductById(productId);
 
-    public Product editProduct(Product request,String id){//編輯商品
-        Product product = getProductById(id);
         // 限制只能改自己上架的商品
-        if (!product.getSellerID().equals(request.getSellerID())) {
+        if (!product.getSellerID().equals(currentUserId)) {
             throw new SecurityException("You are not authorized to edit this product");
         }
-        int price=request.getProductPrice();
-        validateProductFields(product);
-        //通常可以修改的內容
-        product.setProductName(request.getProductName());
-        product.setProductDescription(request.getProductDescription());
-        product.setProductImage(request.getProductImage());
-        product.setProductType(request.getProductType());
-        product.setProductStock(request.getProductStock());
-        product.setProductCategory(request.getProductCategory());
-        //修改時要注意條件
-        if(request.getProductStatus()!=Product.ProductStatuses.BANNED){
+        //僅更新有值的欄位
+        if (request.getProductName() != null) {product.setProductName(request.getProductName());}
+        if (request.getProductDescription() != null) {product.setProductDescription(request.getProductDescription());}
+        if (request.getProductImage() != null) {product.setProductImage(request.getProductImage());}
+        if (request.getProductType() != null && request.getProductType()!=ProductTypes.AUCTION) {
+            product.setProductType(request.getProductType());
+        }
+        if (request.getProductStock() != null) {product.setProductStock(request.getProductStock());}
+        if (request.getProductPrice() != null ) {product.setProductPrice(request.getProductPrice());}
+        if (request.getProductCategory() != null) {product.setProductCategory(request.getProductCategory());}
+        if (request.getProductStatus() != null &&
+                request.getProductStatus() != Product.ProductStatuses.BANNED) {
             product.setProductStatus(request.getProductStatus());
         }
-        if(request.getProductType()==ProductTypes.DIRECT){
-            product.setProductPrice(price);
-        }
-        product.setUpdatedTime(LocalDateTime.now());
 
+        // 驗證更新後欄位
+        validateProductFields(product);
+        product.setUpdatedTime(LocalDateTime.now());
         return repository.save(product);
     }
 
-    public Product publishProduct(String id){//上架商品
-        Product product = getProductById(id);
-        if(product != null){
-            product.setProductStatus(Product.ProductStatuses.ACTIVE);
-            product.setUpdatedTime(LocalDateTime.now());
-            return repository.save(product);
+    public Product publishProduct(String productID,String currentUserId){//上架商品
+        Product product = getProductById(productID);
+        if (!product.getSellerID().equals(currentUserId)) {
+            throw new SecurityException("You are not authorized to edit this product");
         }
-        else{
-            throw new NoSuchElementException("Cannot publish. Product not found with id: " + id);
-        }
+        product.setProductStatus(Product.ProductStatuses.ACTIVE);
+        product.setUpdatedTime(LocalDateTime.now());
+        return repository.save(product);
     }
 
-    public Product withdrawProduct(String id){//下架商品
-        Product product = getProductById(id);
-        if(product != null){
-            product.setProductStatus(Product.ProductStatuses.INACTIVE);
-            product.setUpdatedTime(LocalDateTime.now());
-            return repository.save(product);
+    public Product withdrawProduct(String productID,String currentUserId){//下架商品
+        Product product = getProductById(productID);
+        if (!product.getSellerID().equals(currentUserId)) {
+            throw new SecurityException("You are not authorized to edit this product");
         }
-        else{
-            throw new NoSuchElementException("Cannot publish. Product not found with id: " + id);
-        }
+        product.setProductStatus(Product.ProductStatuses.INACTIVE);
+        product.setUpdatedTime(LocalDateTime.now());
+        return repository.save(product);
     }
-    public void deleteProduct(String id) {//刪除商品
-        Product product = getProductById(id);
+    public void deleteProduct(String productID,String currentUserId) {//刪除商品
+        Product product = getProductById(productID);
+        if (!product.getSellerID().equals(currentUserId)) {
+            throw new SecurityException("You are not authorized to edit this product");
+        }
         repository.delete(product);
     }
     private void validateProductFields(Product product) {//驗證商品欄位

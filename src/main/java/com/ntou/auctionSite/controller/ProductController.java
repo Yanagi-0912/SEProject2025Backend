@@ -2,7 +2,11 @@ package com.ntou.auctionSite.controller;
 
 import java.util.*;
 
+import com.ntou.auctionSite.dto.EditProductRequest;
 import com.ntou.auctionSite.model.Product;
+import com.ntou.auctionSite.model.User;
+import com.ntou.auctionSite.repository.UserRepository;
+import com.ntou.auctionSite.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +27,12 @@ import com.ntou.auctionSite.service.ProductService;
 public class ProductController { // 負責處理商品新增、上下架、查看、修改的class
     @Autowired
     private ProductService productService;
-
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
     //<?>表示可以是任何型態,前端可以提供第幾頁、每頁大小
-    @GetMapping("api/products/")
+    @GetMapping("/api/products/")
     @Operation(
             summary = "取得商品列表（分頁）",
             description = "分頁查詢所有商品，支援自訂每頁商品數量"
@@ -64,7 +72,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @GetMapping("api/products/{id}")
+    @GetMapping("/api/products/{id}")
     @Operation(
             summary = "取得單一商品資訊",
             description = "根據商品 ID 查詢商品詳細資訊"
@@ -112,7 +120,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @PostMapping("api/products/add") // 新增商品
+    @PostMapping("/api/products/add") // 新增商品
     @Operation(
             summary = "新增商品",
             description = "建立新商品，商品預設狀態為 PENDING（待上架）"
@@ -151,14 +159,22 @@ public class ProductController { // 負責處理商品新增、上下架、查�
                             mediaType = "application/json",
                             schema = @Schema(implementation = Product.class),
                             examples = @ExampleObject(
-                                    value = "{\"productID\":\"P001\",\"sellerID\":\"S001\",\"productName\":\"餅乾\",\"productPrice\":100,\"productType\":\"DIRECT\"}"
+                                    value = "{\"productName\":\"餅乾\",\"productPrice\":100,\"productType\":\"DIRECT\"}"
                             )
                     )
             )
-            @RequestBody Product product) {
+            @RequestBody Product product,
+            Authentication authentication
+    ) {
+
         try {
-            Product saved = productService.createProduct(product);
-            return ResponseEntity.status(201).body("Product created successfully! ProductID: " + saved.getProductID());
+            // 從 Authentication 拿到目前使用者的 username 或 userId
+            String username= authentication.getName(); // 或用 userService 查出完整 User
+            String currentUserId = userService.getUserInfo(username).id();
+            System.out.println(currentUserId);
+            Product saved = productService.createProduct(product, currentUserId);
+            return ResponseEntity.status(201)
+                    .body("Product created successfully! ProductID: " + saved.getProductID());
         }
         catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body("Error creating product: " + e.getMessage());
@@ -168,7 +184,8 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         }
     }
 
-    @PutMapping("api/products/edit/{id}") // 修改商品
+
+    @PutMapping("/api/products/edit/{productID}") // 修改商品
     @Operation(
             summary = "修改商品資訊",
             description = "更新商品的基本資訊（名稱、價格、描述等）"
@@ -191,6 +208,14 @@ public class ProductController { // 負責處理商品新增、上下架、查�
                     )
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "沒有權限修改商品",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "You are not authorized to edit this product")
+                    )
+            ),
+            @ApiResponse(
                     responseCode = "500",
                     description = "伺服器錯誤",
                     content = @Content(
@@ -200,33 +225,30 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             )
     })
     public ResponseEntity<?> editProduct(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "更新的商品資料",
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = Product.class),
-                            examples = @ExampleObject(
-                                    value = "{\"productName\":\"巧克力餅乾\",\"productPrice\":150}"
-                            )
-                    )
-            )
-            @RequestBody Product request,
-            @Parameter(description = "商品ID", example = "P001", required = true)
-            @PathVariable String id) {
+            @PathVariable String productID,
+            @RequestBody EditProductRequest request,
+            Authentication authentication) {
+
         try {
-            Product update = productService.editProduct(request, id);
-            return ResponseEntity.ok("Product updated successfully! ProductID: " + update.getProductID());
+            String username = authentication.getName();
+            String currentUserId = userService.getUserInfo(username).id();
+            Product updated = productService.editProduct(productID, request, currentUserId);
+            return ResponseEntity.ok("Product updated successfully! ProductID: " + updated.getProductID());
+
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.status(404).body("Product not found with ID: " + id); // not found
+            return ResponseEntity.status(404).body("Product not found with ID: " + productID);
+        }
+        catch (SecurityException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 
-    @PutMapping("api/products/upload/{id}") // 上架商品
+
+    @PutMapping("/api/products/upload/{productID}") // 上架商品
     @Operation(
             summary = "上架商品",
             description = "將商品狀態改為 AVAILABLE（已上架），使商品可供購買"
@@ -259,20 +281,24 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     })
     public ResponseEntity<?> publishProduct(
             @Parameter(description = "商品ID", example = "P001", required = true)
-            @PathVariable String id) {
+            @PathVariable String productID,Authentication authentication) {
         try {
-            Product published = productService.publishProduct(id);
+            String username = authentication.getName();
+            String currentUserId = userService.getUserInfo(username).id();
+            Product published = productService.publishProduct(productID,currentUserId);
+            System.out.println(username);
+            System.out.println(currentUserId);
             return ResponseEntity.ok("Product published successfully! ProductID: " + published.getProductID());
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.status(404).body("Product not found with ID: " + id);
+            return ResponseEntity.status(404).body("Product not found with ID: " + productID);
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 
-    @PutMapping("api/products/withdraw/{id}") // 下架商品
+    @PutMapping("/api/products/withdraw/{productID}") // 下架商品
     @Operation(
             summary = "下架商品",
             description = "將商品狀態改為 UNAVAILABLE（已下架），商品將不可購買"
@@ -304,20 +330,22 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             )
     })
     public ResponseEntity<?> withdrawProduct(
-            @Parameter(description = "商品ID", example = "P001", required = true)
-            @PathVariable String id) {
+            //@Parameter(description = "商品ID", example = "P001", required = true)
+            @PathVariable String productID,Authentication authentication) {
         try {
-            Product withdrawn = productService.withdrawProduct(id);
+            String username = authentication.getName();
+            String currentUserId = userService.getUserInfo(username).id();
+            Product withdrawn = productService.withdrawProduct(productID,currentUserId);
             return ResponseEntity.ok("Product withdrawn successfully! ProductID: " + withdrawn.getProductID());
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.status(404).body("Product not found with ID: " + id);
+            return ResponseEntity.status(404).body("Product not found with ID: " + productID);
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
-    @DeleteMapping("api/products/delete/{id}")//刪除產品
+    @DeleteMapping("/api/products/delete/{id}")//刪除產品
     @Operation(
             summary = "刪除商品",
             description = "永久刪除商品資料"
@@ -350,13 +378,15 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     })
     public ResponseEntity<?> deleteProduct(
             @Parameter(description = "商品ID", example = "P001", required = true)
-            @PathVariable String id) {
+            @PathVariable String productID,Authentication authentication) {
         try {
-            productService.deleteProduct(id);
-            return ResponseEntity.ok("Product deleted successfully! ProductID: " + id);
+            String username=authentication.getName();
+            String currentUserId=userService.getUserInfo(username).id();
+            productService.deleteProduct(productID,currentUserId);
+            return ResponseEntity.ok("Product deleted successfully! ProductID: " + productID);
         }
         catch (NoSuchElementException e) {
-            return ResponseEntity.status(404).body("Product not found with ID: " + id);
+            return ResponseEntity.status(404).body("Product not found with ID: " + productID);
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
