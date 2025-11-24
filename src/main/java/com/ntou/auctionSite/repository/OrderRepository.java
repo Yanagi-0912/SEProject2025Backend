@@ -1,6 +1,6 @@
 package com.ntou.auctionSite.repository;
 
-import com.ntou.auctionSite.model.Order;
+import com.ntou.auctionSite.model.order.Order;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

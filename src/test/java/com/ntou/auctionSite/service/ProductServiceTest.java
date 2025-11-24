@@ -1,6 +1,7 @@
 package com.ntou.auctionSite.service;
 
-import com.ntou.auctionSite.model.Product;
+import com.ntou.auctionSite.model.product.Product;
+import com.ntou.auctionSite.service.product.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

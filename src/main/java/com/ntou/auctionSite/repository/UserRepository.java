@@ -1,6 +1,6 @@
 package com.ntou.auctionSite.repository;
 
-import com.ntou.auctionSite.model.User;
+import com.ntou.auctionSite.model.user.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
