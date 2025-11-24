@@ -27,9 +27,9 @@ public class OrderService {
         Cart cart= order.getCart();
         List<OrderItem> orderItems = new ArrayList<>();
         for (Cart.CartItem item : cart.getItems()) {
-            Product product = productService.getProductById(item.getProductID());
+            Product product = productService.getProductById(item.getProductId());
             if (product == null) {
-                throw new NoSuchElementException("Product not found: " + item.getProductID());
+                throw new NoSuchElementException("Product not found: " + item.getProductId());
             }
 
             if (types == ProductTypes.AUCTION) {//拍賣商品建立訂單
