@@ -80,9 +80,9 @@ public class User implements UserDetails {
     private String userNickname;
     private String address;
     private String phoneNumber;
-    private float averageRating;
-    private int ratingCount;
-    private boolean isBanned;
+    private Float averageRating;  // 改為 Float，可為 null
+    private Integer ratingCount;  // 改為 Integer，可為 null
+    private Boolean isBanned;     // 改為 Boolean，可為 null
 
     private ArrayList<browseHistory> browseHistoryArrayList;
     private ArrayList<purchaseHistory> purchaseHistoryArrayList;

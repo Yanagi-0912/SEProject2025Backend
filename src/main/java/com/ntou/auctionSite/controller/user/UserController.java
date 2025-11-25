@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.ntou.auctionSite.dto.user.SellerInfoResponse;
 
 /**
  * 使用者管理 Controller
@@ -189,6 +190,64 @@ public class UserController {
                     .body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    /**
+     * 根據使用者 ID 取得賣家資訊
+     * GET /api/user/{userId}/seller
+     */
+    @GetMapping("/{userId}/seller")
+    @Operation(
+            summary = "取得賣家資訊",
+            description = "根據指定的使用者 ID 取得該賣家的公開資訊及販售商品列表"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功取得賣家資訊",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SellerInfoResponse.class),
+                            examples = @ExampleObject(
+                                    name = "賣家資訊範例",
+                                    value = """
+                                {
+                                  "sellerId": "507f1f77bcf86cd799439011",
+                                  "username": "apple_store",
+                                  "nickname": "Apple 專賣店",
+                                  "address": "台北市信義區",
+                                  "phoneNumber": "0912345678",
+                                  "averageRating": 4.8,
+                                  "ratingCount": 152,
+                                  "totalProducts": 5,
+                                  "products": [
+                                    {
+                                      "productId": "P001",
+                                      "productName": "iPhone 15 Pro",
+                                      "price": 35900,
+                                      "imageUrl": "/uploads/iphone15.jpg",
+                                      "status": "AVAILABLE"
+                                    }
+                                  ]
+                                }
+                                """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "賣家不存在"
+            )
+    })
+    public ResponseEntity<?> getSellerInfo(@PathVariable String userId) {
+        try {
+            SellerInfoResponse sellerInfo = userService.getSellerInfo(userId);
+            return ResponseEntity.ok(sellerInfo);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
 
     // 內部類別用於回應
     private record ErrorResponse(String error) {}

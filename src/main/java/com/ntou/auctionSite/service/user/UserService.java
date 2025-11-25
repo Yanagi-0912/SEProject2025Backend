@@ -8,6 +8,10 @@ import com.ntou.auctionSite.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.ntou.auctionSite.dto.user.SellerInfoResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 使用者服務 - 處理使用者資訊的更新
@@ -33,8 +37,8 @@ public class UserService {
                 user.getUserNickname(),
                 user.getAddress(),
                 user.getPhoneNumber(),
-                user.getAverageRating(),
-                user.getRatingCount()
+                user.getAverageRating() != null ? user.getAverageRating() : 0.0f,
+                user.getRatingCount() != null ? user.getRatingCount() : 0
         );
     }
 
@@ -89,8 +93,8 @@ public class UserService {
                 user.getUserNickname(),
                 user.getAddress(),
                 user.getPhoneNumber(),
-                user.getAverageRating(),
-                user.getRatingCount()
+                user.getAverageRating() != null ? user.getAverageRating() : 0.0f,
+                user.getRatingCount() != null ? user.getRatingCount() : 0
         );
     }
 
@@ -115,5 +119,44 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
     }
+
+    /**
+     * 取得賣家資訊（包含販售商品列表）
+     */
+    public SellerInfoResponse getSellerInfo(String sellerId) {
+        // 1. 查詢賣家資訊
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new RuntimeException("賣家不存在"));
+
+        // 2. 從 User 的 ownedProducts 取得商品列表
+        List<SellerInfoResponse.SellerProduct> sellerProducts = new ArrayList<>();
+
+        if (seller.getOwnedProducts() != null) {
+            sellerProducts = seller.getOwnedProducts().stream()
+                    .map(product -> SellerInfoResponse.SellerProduct.builder()
+                            .productId(product.getProductID())
+                            .productName(product.getProductName())
+                            .price(product.getProductPrice())
+                            .imageUrl(product.getProductImage())
+                            .status(product.getProductStatus() != null ?
+                                    product.getProductStatus().toString() : "UNKNOWN")
+                            .build())
+                    .toList();
+        }
+
+        // 3. 組合賣家資訊（使用正確的欄位名稱）
+        return SellerInfoResponse.builder()
+                .sellerId(seller.getId())
+                .username(seller.getUsername())        // 對應 userName
+                .nickname(seller.getUserNickname())    // 對應 userNickname
+                .address(seller.getAddress())
+                .phoneNumber(seller.getPhoneNumber())
+                .averageRating(seller.getAverageRating())
+                .ratingCount(seller.getRatingCount())
+                .products(sellerProducts)
+                .totalProducts(sellerProducts.size())
+                .build();
+    }
+
 }
 
