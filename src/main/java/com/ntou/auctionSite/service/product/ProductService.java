@@ -49,16 +49,18 @@ public class ProductService {
 
     public Product createProduct(Product product,String currentUserId){//創建商品
         String randomId;
-        do {
-            randomId = "PROD" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();//先用8位就好
-        }
-        while (repository.findById(randomId).isPresent());
+        product.setSellerID(currentUserId);//先設定sellerID再檢查
         List<Product> existing = repository.findBySellerIDAndProductName(
                 product.getSellerID(), product.getProductName());
         if(!existing.isEmpty()) {
             throw new IllegalStateException("同一個賣家已經存在同名商品！");
         }
-        product.setSellerID(currentUserId);
+
+        do {
+            randomId = "PROD" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();//先用8位就好
+        }
+        while (repository.findById(randomId).isPresent());
+
         product.setProductID(randomId);
         product.setCreatedTime(LocalDateTime.now());
         validateProductFields(product);//驗證合法性
