@@ -29,7 +29,10 @@ public record UserInfoResponse(
         float averageRating,
 
         @Schema(description = "評分次數", example = "10")
-        int ratingCount
+        int ratingCount,
+
+        @Schema(description = "是否被封鎖", example = "false")
+        boolean isBanned
 ) {
 }
 

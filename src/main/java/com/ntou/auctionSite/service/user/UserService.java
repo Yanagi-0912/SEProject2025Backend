@@ -38,7 +38,8 @@ public class UserService {
                 user.getAddress(),
                 user.getPhoneNumber(),
                 user.getAverageRating() != null ? user.getAverageRating() : 0.0f,
-                user.getRatingCount() != null ? user.getRatingCount() : 0
+                user.getRatingCount() != null ? user.getRatingCount() : 0,
+                user.getIsBanned() != null ? user.getIsBanned() : false
         );
     }
 
@@ -94,7 +95,8 @@ public class UserService {
                 user.getAddress(),
                 user.getPhoneNumber(),
                 user.getAverageRating() != null ? user.getAverageRating() : 0.0f,
-                user.getRatingCount() != null ? user.getRatingCount() : 0
+                user.getRatingCount() != null ? user.getRatingCount() : 0,
+                user.getIsBanned() != null ? user.getIsBanned() : false
         );
     }
 

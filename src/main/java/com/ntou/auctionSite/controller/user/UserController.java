@@ -59,7 +59,8 @@ public class UserController {
                                       "address": "台北市中正區",
                                       "phoneNumber": "0912345678",
                                       "averageRating": 4.5,
-                                      "ratingCount": 10
+                                      "ratingCount": 10,
+                                      "isBanned": false
                                     }
                                     """
                             )
@@ -107,7 +108,8 @@ public class UserController {
                                       "address": "台北市中正區羅斯福路一號",
                                       "phoneNumber": "0912345678",
                                       "averageRating": 4.5,
-                                      "ratingCount": 10
+                                      "ratingCount": 10,
+                                      "isBanned": false
                                     }
                                     """
                             )
