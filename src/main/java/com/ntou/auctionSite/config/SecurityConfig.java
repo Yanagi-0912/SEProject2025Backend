@@ -40,7 +40,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())                          // 禁用 CSRF 保護
             .authorizeHttpRequests( auth -> { auth
                     .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // 允許所有人訪問商品列表和詳情
-                    .requestMatchers(HttpMethod.GET, "/api/user/*/seller").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll() // 允許訪問使用者公開資訊（含聊天功能）
                     .requestMatchers("/api/products/**").authenticated()
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // 允許訪問 Swagger UI

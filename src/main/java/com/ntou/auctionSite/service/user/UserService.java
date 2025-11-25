@@ -3,6 +3,7 @@ package com.ntou.auctionSite.service.user;
 import com.ntou.auctionSite.dto.user.UpdatePasswordRequest;
 import com.ntou.auctionSite.dto.user.UpdateUserRequest;
 import com.ntou.auctionSite.dto.user.UserInfoResponse;
+import com.ntou.auctionSite.dto.user.PublicUserInfoResponse;
 import com.ntou.auctionSite.model.user.User;
 import com.ntou.auctionSite.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -160,5 +161,22 @@ public class UserService {
                 .build();
     }
 
-}
+    /**
+     * 取得使用者公開資訊（給其他使用者查看）
+     */
+    public PublicUserInfoResponse getPublicUserInfo(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("使用者不存在"));
 
+        return new PublicUserInfoResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getUserNickname(),
+                user.getAddress(),
+                user.getPhoneNumber(),
+                user.getAverageRating() != null ? user.getAverageRating() : 0.0f,
+                user.getRatingCount() != null ? user.getRatingCount() : 0
+        );
+    }
+
+}

@@ -3,6 +3,7 @@ package com.ntou.auctionSite.controller.user;
 import com.ntou.auctionSite.dto.user.UpdatePasswordRequest;
 import com.ntou.auctionSite.dto.user.UpdateUserRequest;
 import com.ntou.auctionSite.dto.user.UserInfoResponse;
+import com.ntou.auctionSite.dto.user.PublicUserInfoResponse;
 import com.ntou.auctionSite.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -189,6 +190,62 @@ public class UserController {
             return ResponseEntity.ok(new SuccessResponse("密碼更新成功"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    /**
+     * 根據使用者 ID 取得使用者公開資訊
+     * GET /api/user/{userId}
+     */
+    @GetMapping("/{userId}")
+    @Operation(
+            summary = "取得使用者公開資訊",
+            description = """
+                    根據使用者 ID 取得該使用者的公開資訊。
+                    
+                    **用途**：
+                    - 查看其他使用者的基本資料
+                    - 聊天功能顯示對方資訊
+                    - 商品頁面顯示賣家資訊
+                    
+                    **注意**：此 API 不需要登入，且不會返回敏感資訊（如 email、isBanned）
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功取得使用者資訊",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = PublicUserInfoResponse.class),
+                            examples = @ExampleObject(
+                                    name = "使用者公開資訊範例",
+                                    value = """
+                                    {
+                                      "id": "507f1f77bcf86cd799439011",
+                                      "username": "john_doe",
+                                      "nickname": "小明",
+                                      "address": "台北市中正區",
+                                      "phoneNumber": "0912345678",
+                                      "averageRating": 4.5,
+                                      "ratingCount": 10
+                                    }
+                                    """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "使用者不存在"
+            )
+    })
+    public ResponseEntity<?> getUserById(@PathVariable String userId) {
+        try {
+            PublicUserInfoResponse userInfo = userService.getPublicUserInfo(userId);
+            return ResponseEntity.ok(userInfo);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ErrorResponse(e.getMessage()));
         }
     }
