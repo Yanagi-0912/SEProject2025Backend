@@ -209,7 +209,7 @@ public class UserController {
                     - 聊天功能顯示對方資訊
                     - 商品頁面顯示賣家資訊
                     
-                    **注意**：此 API 不需要登入，且不會返回敏感資訊（如 email、isBanned）
+                    **注意**：此 API 不需要登入，且不會返回敏感資訊（如 email）
                     """
     )
     @ApiResponses(value = {
@@ -229,7 +229,8 @@ public class UserController {
                                       "address": "台北市中正區",
                                       "phoneNumber": "0912345678",
                                       "averageRating": 4.5,
-                                      "ratingCount": 10
+                                      "ratingCount": 10,
+                                      "isBanned": false
                                     }
                                     """
                             )

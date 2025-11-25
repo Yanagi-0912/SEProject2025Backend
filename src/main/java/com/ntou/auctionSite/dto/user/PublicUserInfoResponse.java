@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 公開使用者資訊回應（給其他使用者查看）
- * 不包含敏感資訊如 email、isBanned
+ * 不包含敏感資訊如 email
  */
 @Schema(description = "公開使用者資訊")
 public record PublicUserInfoResponse(
@@ -27,7 +27,10 @@ public record PublicUserInfoResponse(
         float averageRating,
 
         @Schema(description = "評分次數", example = "10")
-        int ratingCount
+        int ratingCount,
+
+        @Schema(description = "是否被封鎖", example = "false")
+        boolean isBanned
 ) {
 }
 
