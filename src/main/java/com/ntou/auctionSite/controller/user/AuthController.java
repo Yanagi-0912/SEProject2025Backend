@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -118,6 +119,42 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("登入失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 使用者登出端點
+     * POST /api/auth/logout
+     */
+    @PostMapping("/logout")
+    @Operation(
+            summary = "使用者登出",
+            description = "登出系統。由於 JWT 是無狀態的，客戶端需要刪除儲存的 Token。" +
+                    "Token 會在 30 分鐘後自動過期失效。"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "登出成功，請客戶端刪除儲存的 Token",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "登出成功，請刪除客戶端的 Token")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "伺服器內部錯誤",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            authService.logout(authHeader);
+            return ResponseEntity.ok("登出成功，請刪除客戶端的 Token");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("登出失敗: " + e.getMessage());
         }
     }
 }

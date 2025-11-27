@@ -70,4 +70,15 @@ public class AuthService {
         return new AuthResponse(token, user.getUsername());
     }
 
+    /**
+     * 使用者登出
+     * 客戶端需要刪除儲存的 Token
+     * Token 會在過期時間後自動失效（30分鐘）
+     */
+    public void logout(String token) {
+        // JWT 是無狀態的，登出只需要客戶端刪除 token
+        // Token 會在到期時間後自動失效
+        // 如果需要立即撤銷，可以考慮使用 Redis 黑名單機制
+    }
+
 }
