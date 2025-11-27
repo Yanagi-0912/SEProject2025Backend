@@ -2,8 +2,8 @@
 http://localhost:8080/api/cart/items
 ```json
 {
-  "productId": "PRODA9618BD2",
-  "quantity": 5
+  "productId":"PROD4C5BCAF2",
+  "quantity":6
 }
 ```
 新增訂單:
@@ -11,21 +11,18 @@ http://localhost:8080/api/orders/add
 body:
 ```json
 {
-    "orderType": "DIRECT",
-    "buyerID": "U001",
-    "cart": {
-        "items": [
-            {
-                "productID": "PRODA9618BD2",
-                "quantity": 5
-            },
-            {
-                "productID": "PROD933B7085",
-                "quantity": 2
-            }
-        ]
-    }
+  "buyerID": "thugcreeper",
+  "orderType": "DIRECT",
+  "cart": {
+    "items": [
+      {
+        "productId": "PROD4C5BCAF2",
+        "quantity": 6
+      }
+    ]
+  }
 }
+
 
 
 ```

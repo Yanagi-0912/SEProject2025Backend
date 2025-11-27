@@ -44,6 +44,9 @@ public class OrderService {
                 }
                 // 扣庫存
                 product.setProductStock(product.getProductStock() - item.getQuantity());
+                if(product.getProductStock()==0){//庫存數量變成0要設為INACTIVE
+                    product.setProductStatus(Product.ProductStatuses.INACTIVE);
+                }
                 productRepository.save(product);
 
                 orderItems.add(new OrderItem(
@@ -52,13 +55,17 @@ public class OrderService {
                         product.getSellerID(),
                         product.getNowHighestBid()
                 ));
-            } else {//一般直購商品建立訂單
+            }
+            else {//一般直購商品建立訂單
 
                 if (product.getProductStock() < item.getQuantity()) {
                     throw new IllegalStateException("Out of stock! product: " + product.getProductName());
                 }
                 // 扣庫存
                 product.setProductStock(product.getProductStock() - item.getQuantity());
+                if(product.getProductStock()==0){
+                    product.setProductStatus(Product.ProductStatuses.INACTIVE);
+                }
                 productRepository.save(product);
 
                 orderItems.add(new OrderItem(
@@ -70,6 +77,7 @@ public class OrderService {
             }
         }
         //訂單ID設為隨機10碼
+        order.setBuyerID(buyerID);
         order.setOrderID(UUID.randomUUID().toString().substring(0, 10).toUpperCase());//訂單用隨機id
         order.setOrderType(types);
         order.setOrderTime(LocalDateTime.now());
