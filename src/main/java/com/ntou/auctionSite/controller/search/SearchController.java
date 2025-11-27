@@ -1,6 +1,7 @@
 package com.ntou.auctionSite.controller.search;
 
 import com.ntou.auctionSite.service.search.SearchService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.NoSuchElementException;
 
 @RestController
+@Tag(name = "關鍵字搜尋", description = "依據關鍵字搜尋商品")
 public class SearchController {
     @Autowired
     private SearchService searchService;

@@ -64,6 +64,7 @@ public class ProductService {
         product.setProductID(randomId);
         product.setCreatedTime(LocalDateTime.now());
         validateProductFields(product);//驗證合法性
+        updateProductStatus(product);
         return repository.save(product);
     }
     public Product editProduct(String productId, EditProductRequest request, String currentUserId) {
@@ -91,6 +92,7 @@ public class ProductService {
         // 驗證更新後欄位
         validateProductFields(product);
         product.setUpdatedTime(LocalDateTime.now());
+        updateProductStatus(product);
         return repository.save(product);
     }
 
@@ -119,6 +121,15 @@ public class ProductService {
             throw new SecurityException("You are not authorized to edit this product");
         }
         repository.delete(product);
+    }
+    private void updateProductStatus(Product product) {//庫存=0時設為INACTIVE
+        if (product.getProductStock() == 0) {
+            product.setProductStatus(Product.ProductStatuses.INACTIVE);
+        }
+        else if (product.getProductStatus() == Product.ProductStatuses.INACTIVE) {
+            // 如果之前因為庫存為0被設為 INACTIVE，現在有庫存就恢復 ACTIVE
+            product.setProductStatus(Product.ProductStatuses.ACTIVE);
+        }
     }
     private void validateProductFields(Product product) {//驗證商品欄位
         int price=product.getProductPrice();

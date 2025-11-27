@@ -6,6 +6,7 @@ import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.model.product.ProductTypes;
 import com.ntou.auctionSite.service.order.OrderService;
 import com.ntou.auctionSite.service.product.ProductService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.NoSuchElementException;
 
 @RestController
+@Tag(name = "訂單管理", description = "建立與取得訂單之API")
 public class OrderController {
     @Autowired OrderService orderService;
     @Autowired ProductService productService;
