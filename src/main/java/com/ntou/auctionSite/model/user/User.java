@@ -26,19 +26,29 @@ import java.util.List;
 public class User implements UserDetails {
 
     @Id
-    private String id;
+    private String id;              // 使用者 ID
 
     @Indexed(unique = true)
-    private String userName;
+    private String userName;        // 使用者名稱
 
     @Indexed(unique = true)
-    private String email;
+    private String email;           // 電子郵件
 
-    private String password;
+    private String password;        // 密碼
 
-    private Role role = Role.USER;  // 新增這行
+    private Cart cart = new Cart(); // 購物車，預設為空的購物車
 
-    private Cart cart = new Cart();
+    private String userNickname;    // 使用者暱稱
+
+    private String address;         // 地址
+
+    private String phoneNumber;     // 電話號碼
+
+    private Float averageRating;    //賣家評分
+
+    private Integer ratingCount;    //評分人數
+
+    private Boolean isBanned;       //是否被封鎖
 
     // 實作 UserDetails (這裡有空要回來檢視一下有沒有必要 因為後來沒有分買家賣家)
     @Override
@@ -76,13 +86,7 @@ public class User implements UserDetails {
         return true;
     }
 
-    // 拍賣網站欄位
-    private String userNickname;
-    private String address;
-    private String phoneNumber;
-    private Float averageRating;  // 改為 Float，可為 null
-    private Integer ratingCount;  // 改為 Integer，可為 null
-    private Boolean isBanned;     // 改為 Boolean，可為 null
+
 
     private ArrayList<browseHistory> browseHistoryArrayList;
     private ArrayList<purchaseHistory> purchaseHistoryArrayList;
