@@ -63,6 +63,7 @@ public class ProductService {
 
         product.setProductID(randomId);
         product.setCreatedTime(LocalDateTime.now());
+        product.setUpdatedTime(LocalDateTime.now());
         validateProductFields(product);//驗證合法性
         updateProductStatus(product);
         return repository.save(product);

@@ -85,7 +85,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
                             mediaType = "application/json",
                             schema = @Schema(implementation = Product.class),
                             examples = @ExampleObject(
-                                    value = "{\"productID\":\"P001\",\"sellerID\":\"S001\",\"productName\":\"餅乾\",\"productPrice\":100,\"productType\":\"DIRECT\",\"productStatus\":\"AVAILABLE\"}"
+                                    value = "{\"productID\":\"PRODE31B4FC9\",\"sellerID\":\"6916f6c5dfcc6a557f394002\",\"productName\":\"測試商品\",\"productPrice\":100,\"productType\":\"DIRECT\",\"productStatus\":\"INACTIVE\"}"
                             )
                     )
             ),
@@ -107,7 +107,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             )
     })
     public ResponseEntity<?> getProductById(
-            @Parameter(description = "商品ID", example = "P001", required = true)
+            @Parameter(description = "商品ID", example = "PRODE31B4FC9", required = true)
             @PathVariable String id) {
         try {
             return ResponseEntity.ok(productService.getProductById(id));
@@ -159,7 +159,8 @@ public class ProductController { // 負責處理商品新增、上下架、查�
                             mediaType = "application/json",
                             schema = @Schema(implementation = Product.class),
                             examples = @ExampleObject(
-                                    value = "{\"productName\":\"餅乾\",\"productPrice\":100,\"productType\":\"DIRECT\"}"
+                                    name = "新增商品範例",
+                                    value = "{\n \"productName\": \"新的測試商品\",\n \"productDescription\": \"就測試\",\n \"productPrice\": 150,\n \"productStock\": 20,\n \"productType\": \"DIRECT\",\n \"productStatus\": \"ACTIVE\",\n \"productCategory\": \"零食\"\n}"
                             )
                     )
             )
@@ -189,6 +190,17 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     @Operation(
             summary = "修改商品資訊",
             description = "更新商品的基本資訊（名稱、價格、描述等）"
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "商品資料",
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Product.class),
+                    examples = @ExampleObject(
+                            name = "修改商品範例",
+                            value = "{\n \"productName\": \"修改後的測試商品\",\n \"productDescription\": \"就測試\",\n \"productPrice\": 190,\n \"productStock\": 200 }" )
+            )
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -225,6 +237,8 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             )
     })
     public ResponseEntity<?> editProduct(
+            @Parameter(description = "商品ID", example = "PRODE31B4FC9", required = true)
+
             @PathVariable String productID,
             @RequestBody EditProductRequest request,
             Authentication authentication) {
@@ -280,7 +294,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             )
     })
     public ResponseEntity<?> publishProduct(
-            @Parameter(description = "商品ID", example = "P001", required = true)
+            @Parameter(description = "商品ID", example = "PRODE31B4FC9", required = true)
             @PathVariable String productID,Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -330,7 +344,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             )
     })
     public ResponseEntity<?> withdrawProduct(
-            //@Parameter(description = "商品ID", example = "P001", required = true)
+            @Parameter(description = "商品ID", example = "PRODE31B4FC9", required = true)
             @PathVariable String productID,Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -377,7 +391,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             )
     })
     public ResponseEntity<?> deleteProduct(
-            @Parameter(description = "商品ID", example = "P001", required = true)
+            @Parameter(description = "商品ID", example = "PRODE31B4FC9", required = true)
             @PathVariable String productID,Authentication authentication) {
         try {
             String username=authentication.getName();
