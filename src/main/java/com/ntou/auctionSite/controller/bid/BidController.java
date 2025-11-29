@@ -3,6 +3,7 @@ package com.ntou.auctionSite.controller.bid;
 import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.service.bid.BidService;
 import com.ntou.auctionSite.service.product.ProductService;
+import com.ntou.auctionSite.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -24,10 +26,13 @@ import java.util.NoSuchElementException;
 @RestController
 @Tag(name = "競標管理", description = "拍賣競標相關 API - 建立拍賣、出價、結束拍賣、建立訂單等功能")
 public class BidController {
-    @Autowired BidService bidservice;
-    @Autowired ProductService productService;
-
-    @PostMapping("api/createAucs/{id}")
+    @Autowired
+    private BidService bidservice;
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private UserService userService;
+    @PostMapping("api/createAucs/{productID}")
     @Operation(
             summary = "建立拍賣商品",
             description = "將商品設定為拍賣模式，需指定起標價和結束時間。時間格式為 ISO 8601 (yyyy-MM-ddTHH:mm:ss)"
@@ -38,7 +43,7 @@ public class BidController {
                     description = "拍賣建立成功",
                     content = @Content(
                             mediaType = "text/plain",
-                            examples = @ExampleObject(value = "Auction created successfully! ProductID: P001")
+                            examples = @ExampleObject(value = "Auction created successfully! ProductID: PRODEE140C9E")
                     )
             ),
             @ApiResponse(
@@ -47,6 +52,23 @@ public class BidController {
                     content = @Content(
                             mediaType = "text/plain",
                             examples = @ExampleObject(value = "Date format error: Text '2024-13-01T10:00:00' could not be parsed")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "認證錯誤",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "User is not authenticated or login is invalid")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "拒絕執行",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "The currently logged-in user is not the seller " +
+                                    "of the item to be auctioned; auction creation failed.")
                     )
             ),
             @ApiResponse(
@@ -59,17 +81,21 @@ public class BidController {
             )
     })
     public ResponseEntity<?> createAuction(//新增拍賣商品
-            @Parameter(description = "商品ID", example = "P001", required = true)
-            @PathVariable String id,//productID
+            @Parameter(description = "商品ID", example = "PRODEE140C9E", required = true)
+            @PathVariable String productID,//productID
+            Authentication authentication,
             @Parameter(description = "起標價格", example = "100", required = true)
             @RequestParam (name="price") int basicBidPrice,
             @Parameter(description = "拍賣結束時間 (ISO 8601 格式)", example = "2024-12-31T23:59:59", required = true)
             @RequestParam (name="time") String endTime
     ){
         try{
+            String username=authentication.getName();
+            String currentUserId=userService.getUserInfo(username).id();
             //time要符合yyyy/MM/ddTHH:mm:ss格式
             LocalDateTime auctionEndTime = LocalDateTime.parse(endTime);
-            Product auctionProduct=bidservice.createAuction(basicBidPrice,auctionEndTime,id);
+            Product auctionProduct=bidservice.createAuction(basicBidPrice,auctionEndTime,productID,currentUserId);
+
             return ResponseEntity.ok("Auction created successfully! ProductID: " + auctionProduct.getProductID());
         }
         catch (DateTimeParseException e) {//Datetime解析錯誤時的例外處理
@@ -84,6 +110,9 @@ public class BidController {
         }
         catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body("Illegal state: " + e.getMessage());
+        }
+        catch (SecurityException e){
+            return ResponseEntity.status(403).body("Forbidden: "+e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
@@ -127,7 +156,7 @@ public class BidController {
     @PostMapping("api/bids/{id}")
     @Operation(
             summary = "競標出價",
-            description = "對指定商品進行出價，出價金額必須高於當前最高出價"
+            description = "對指定商品進行出價，出價金額必須高於當前最高出價，注意下方範例ID已經對應到測試用的商品，可以放心測試"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -143,7 +172,24 @@ public class BidController {
                     description = "出價失敗（金額過低、拍賣已結束等）",
                     content = @Content(
                             mediaType = "text/plain",
-                            examples = @ExampleObject(value = "Bid error: 出價金額必須高於當前最高出價")
+                            examples = @ExampleObject(value = "User is not authenticated or login is invalid")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "認證錯誤",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "User is not authenticated or login is invalid")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "拒絕執行",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "The bidderID does not match the currently " +
+                                    "logged-in user ID; the bid failed.")
                     )
             ),
             @ApiResponse(
@@ -156,19 +202,25 @@ public class BidController {
             )
     })
     public ResponseEntity<?> placeBid(
-            @Parameter(description = "商品ID", example = "P001", required = true)
+            @Parameter(description = "商品ID", example = "PRODEE140C9E", required = true)
             @PathVariable("id") String productID,// 商品id
+            Authentication authentication,
             @Parameter(description = "出價金額", example = "150", required = true)
             @RequestParam("price") int bidPrice,
             @Parameter(description = "出價者ID", example = "U001", required = true)
             @RequestParam("bidderId") String bidderID
     ){//競標出價
         try{
-            bidservice.placeBid(bidPrice,productID,bidderID);
+            String username=authentication.getName();
+            String currentUserId=userService.getUserInfo(username).id();
+            bidservice.placeBid(bidPrice,productID,bidderID,currentUserId);
             return ResponseEntity.ok("Bid placed successfully!");
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Bid error: " + e.getMessage());
+        }
+        catch (SecurityException e){
+            return ResponseEntity.status(401).body("Authorization error: "+e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
@@ -194,7 +246,7 @@ public class BidController {
                     description = "結束拍賣失敗（拍賣不存在、狀態不符等）",
                     content = @Content(
                             mediaType = "text/plain",
-                            examples = @ExampleObject(value = "Termination error: 拍賣已結束")
+                            examples = @ExampleObject(value = "Termination error: The auction has ended.")
                     )
             ),
             @ApiResponse(
@@ -207,7 +259,7 @@ public class BidController {
             )
     })
     public ResponseEntity<?> terminateAuction(
-            @Parameter(description = "商品ID", example = "P001", required = true)
+            @Parameter(description = "商品ID", example = "PRODEE140C9E", required = true)
             @PathVariable String id){
         try{
             bidservice.terminateAuction(id);

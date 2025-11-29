@@ -63,6 +63,7 @@ public class ProductService {
 
         product.setProductID(randomId);
         product.setCreatedTime(LocalDateTime.now());
+        product.setUpdatedTime(LocalDateTime.now());
         validateProductFields(product);//驗證合法性
         updateProductStatus(product);
         return repository.save(product);
@@ -138,8 +139,9 @@ public class ProductService {
         if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
             throw new IllegalArgumentException("Product name cannot be empty");
         }
-        if (price< 0 || digitCount>8) {//避免輸入不合法或是過大的金額
-            throw new IllegalArgumentException("Product price must be a positive integer!");
+
+        if (price<= 0 || digitCount>8) {//避免輸入不合法或是過大的金額
+            throw new IllegalArgumentException("Product price must be a positive integer and can't be zero!");
         }
         if (product.getProductStock()<0) {
             throw new IllegalArgumentException("Product stock cannot be negative!");

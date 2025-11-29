@@ -33,7 +33,7 @@ public class BidService {
     // 用來格式化時間輸出
     DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     // 建立拍賣商品：設定起標價與競標截止時間
-    public Product createAuction(int basicBidPrice, LocalDateTime auctionEndTime,String productID){//設定起標價 截止時間
+    public Product createAuction(int basicBidPrice, LocalDateTime auctionEndTime,String productID,String currentUserId){//設定起標價 截止時間
         Product auctionProduct=productService.getProductById(productID);
         if (auctionProduct==null) {
             throw new NoSuchElementException("Product not found!");
@@ -46,6 +46,9 @@ public class BidService {
         }
         if(auctionProduct.getProductStock()<=0){
             throw new IllegalArgumentException("No available product in stock!!!");
+        }
+        if(!currentUserId.equals(auctionProduct.getSellerID())){//目前登入者不擁有該商品，不能開始拍賣該商品
+            throw new SecurityException("You are not authorized to auction this product");
         }
         else{//設定價格 時間等等
             auctionProduct.setNowHighestBid(basicBidPrice);//記得先設定bid price
@@ -71,10 +74,10 @@ public class BidService {
         }
     }
     //買家出價
-    public void placeBid(int bidPrice,String productID,String bidderID){
+    public void placeBid(int bidPrice,String productID,String bidderID,String currentUserId){
         Product auctionProduct = productService.getProductById(productID);
         // 必須是 ACTIVE 且為 AUCTION 商品才可以拍賣
-        if(auctionProduct.getProductStatus()!=Product.ProductStatuses.ACTIVE &&
+        if(auctionProduct.getProductStatus()!=Product.ProductStatuses.ACTIVE ||
            auctionProduct.getProductType()!=ProductTypes.AUCTION
         ){
             throw new IllegalArgumentException("Product is not for auction or product is inactive!");
@@ -84,6 +87,9 @@ public class BidService {
         }
         if(bidPrice<=0){
             throw new IllegalArgumentException("BidPrice must greater than 0!!!");
+        }
+        if(!bidderID.equals(currentUserId)){//出價者和目前登入者不同要拒絕
+            throw new SecurityException("You are not authorized to bid by other user's ID");
         }
         else if(bidPrice<=auctionProduct.getNowHighestBid()){
             throw new IllegalArgumentException("Bid must be higher than current highest bid");
