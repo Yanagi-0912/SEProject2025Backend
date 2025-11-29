@@ -53,10 +53,10 @@ public class UserController {
                                     value = """
                                     {
                                       "id": "507f1f77bcf86cd799439011",
-                                      "username": "john_doe",
-                                      "email": "john@example.com",
-                                      "nickname": "小明",
-                                      "address": "台北市中正區",
+                                      "username": "喜多川海夢",
+                                      "email": "MarinKitagawa@example.com",
+                                      "nickname": "瑪琳",
+                                      "address": "4 Chome Takahanacho, Omiya Ward, Saitama, 330-0803日本",
                                       "phoneNumber": "0912345678",
                                       "averageRating": 4.5,
                                       "ratingCount": 10,
@@ -65,13 +65,13 @@ public class UserController {
                                         {
                                           "productID": "prod123",
                                           "sellerID": "507f1f77bcf86cd799439011",
-                                          "productName": "二手 iPhone 13",
-                                          "productDescription": "狀況良好，僅使用一年",
-                                          "productPrice": 15000,
-                                          "productImage": "https://example.com/image.jpg",
+                                          "productName": "黑江雫 二手公仔",
+                                          "productDescription": "狀況良好",
+                                          "productPrice": 3500,
+                                          "productImage": "https://tse1.mm.bing.net/th/id/OIP.nEeWPVdO5OmCDnuOfxvfXgHaLH?rs=1&pid=ImgDetMain&o=7&rm=3",
                                           "productType": "DIRECT",
                                           "productStock": 1,
-                                          "productCategory": "3C產品",
+                                          "productCategory": "玩具類",
                                           "productStatus": "ACTIVE"
                                         }
                                       ]
@@ -116,10 +116,10 @@ public class UserController {
                                     value = """
                                     {
                                       "id": "507f1f77bcf86cd799439011",
-                                      "username": "new_username",
-                                      "email": "newemail@example.com",
-                                      "nickname": "新暱稱",
-                                      "address": "台北市中正區羅斯福路一號",
+                                      "username": "五條新菜",
+                                      "email": "WakanaGojo@example.com",
+                                      "nickname": "新菜",
+                                      "address": "日本〒339-0066 Saitama, Iwatsuki Ward, Atagocho, 10−3 人形直販店工房天祥",
                                       "phoneNumber": "0912345678",
                                       "averageRating": 4.5,
                                       "ratingCount": 10,
@@ -239,9 +239,10 @@ public class UserController {
                                     value = """
                                     {
                                       "id": "507f1f77bcf86cd799439011",
-                                      "username": "john_doe",
-                                      "nickname": "小明",
-                                      "address": "台北市中正區",
+                                      "username": "喜多川海夢",
+                                      "nickname": "瑪琳",
+                                      "email": MarinKitagawa@gmail.com,"
+                                      "address": "4 Chome Takahanacho, Omiya Ward, Saitama, 330-0803日本",
                                       "phoneNumber": "0912345678",
                                       "averageRating": 4.5,
                                       "ratingCount": 10,
@@ -250,13 +251,13 @@ public class UserController {
                                         {
                                           "productID": "prod123",
                                           "sellerID": "507f1f77bcf86cd799439011",
-                                          "productName": "二手 iPhone 13",
-                                          "productDescription": "狀況良好，僅使用一年",
-                                          "productPrice": 15000,
-                                          "productImage": "https://example.com/image.jpg",
+                                          "productName": "黑江雫 二手公仔",
+                                          "productDescription": "狀況良好",
+                                          "productPrice": 3500,
+                                          "productImage": "https://tse1.mm.bing.net/th/id/OIP.nEeWPVdO5OmCDnuOfxvfXgHaLH?rs=1&pid=ImgDetMain&o=7&rm=3",
                                           "productType": "DIRECT",
                                           "productStock": 1,
-                                          "productCategory": "3C產品",
+                                          "productCategory": "玩具類",
                                           "productStatus": "ACTIVE"
                                         }
                                       ]

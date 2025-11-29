@@ -17,6 +17,9 @@ public record PublicUserInfoResponse(
         @Schema(description = "使用者名稱", example = "john_doe")
         String username,
 
+        @Schema(description = "電子郵件", example = "abc123@gmail.com")
+        String email,
+
         @Schema(description = "使用者暱稱", example = "小明")
         String nickname,
 
