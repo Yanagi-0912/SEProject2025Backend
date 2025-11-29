@@ -147,6 +147,7 @@ public class UserService {
         return new PublicUserInfoResponse(
                 user.getId(),
                 user.getUsername(),
+                user.getEmail(),
                 user.getUserNickname(),
                 user.getAddress(),
                 user.getPhoneNumber(),

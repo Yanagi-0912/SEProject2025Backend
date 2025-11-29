@@ -40,6 +40,8 @@ public record PublicUserInfoResponse(
 
         @Schema(description = "正在販售的商品列表")
         List<Product> sellingProducts
+
+
 ) {
 }
 
