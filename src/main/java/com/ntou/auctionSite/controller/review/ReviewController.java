@@ -1,6 +1,7 @@
 package com.ntou.auctionSite.controller.review;
 
 import com.ntou.auctionSite.model.Review;
+import com.ntou.auctionSite.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,15 +16,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.ntou.auctionSite.service.product.ReviewService;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
-@RequestMapping("api/reviews")
+@RequestMapping("/api/reviews")
 @Tag(name = "評論管理", description = "建立與編輯評論與取得評論歷史之API")
 public class ReviewController {
 
     @Autowired
     private ReviewService reviewService;
 
+    @Autowired
+    private UserService userService;
     @PostMapping("/add")
     @Operation(
             summary = "新增評論",
@@ -38,9 +42,9 @@ public class ReviewController {
                     examples = @ExampleObject(
                             name = "新增評論範例",
                             value = "{\n" +
-                                    "  \"productID\": \"P001\",\n" +
+                                    "  \"productID\": \"PROD5B82D1D6\",\n" +
                                     "  \"starCount\": 5,\n" +
-                                    "  \"content\": \"商品非常好！\",\n" +
+                                    "  \"comment\": \"商品非常好！\",\n" +
                                     "  \"imgURL\": \"被評論商品的url\"\n" +
                                     "}"
                     )
@@ -57,10 +61,10 @@ public class ReviewController {
                             examples = @ExampleObject(
                                     value = "{\n" +
                                             "  \"reviewID\": \"REV123\",\n" +
-                                            "  \"productID\": \"P001\",\n" +
+                                            "  \"productID\": \"PROD5B82D1D6\",\n" +
                                             "  \"userID\": \"USER123\",\n" +
                                             "  \"starCount\": 5,\n" +
-                                            "  \"content\": \"商品非常好！\",\n" +
+                                            "  \"comment\": \"商品非常好！\",\n" +
                                             "  \"imgURL\": \"被評論商品的url\"\n" +
                                             "}"
                             )
@@ -79,10 +83,14 @@ public class ReviewController {
     })
     public ResponseEntity<?> createReview(@RequestBody Review review, Authentication authentication){
         try {
-            String currentUserId = authentication.getName();//取得目前使用者的id來驗證
+            String username = authentication.getName();
+            String currentUserId =userService.getUserInfo(username).id() ;//取得目前使用者的id來驗證
             review.setUserID(currentUserId);
             Review saved = reviewService.createReview(review);
             return ResponseEntity.status(201).body(saved);
+        }
+        catch (NoSuchElementException e){
+            return ResponseEntity.status(404).body(e.getMessage());
         }
         catch (IllegalStateException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -92,7 +100,7 @@ public class ReviewController {
         }
     }
 
-    @PutMapping("edit/{reviewId}")
+    @PutMapping("/edit/{reviewId}")
     @Operation(
             summary = "修改評論",
             description = "依據 reviewId 修改評論內容、星等與圖片（圖片可選）"
@@ -107,10 +115,10 @@ public class ReviewController {
                             examples = @ExampleObject(
                                     value = "{\n" +
                                             "  \"reviewID\": \"REV123\",\n" +
-                                            "  \"productID\": \"P001\",\n" +
+                                            "  \"productID\": \"PROD5B82D1D6\",\n" +
                                             "  \"userID\": \"USER123\",\n" +
                                             "  \"starCount\": 4,\n" +
-                                            "  \"content\": \"更新後評論內容\",\n" +
+                                            "  \"comment\": \"更新後評論內容\",\n" +
                                             "  \"imgURL\": \"被評論商品的url\"\n" +
                                             "}"
                             )
@@ -125,23 +133,107 @@ public class ReviewController {
             @Parameter(description = "星等", example = "5", required = true)
             @RequestParam int starCount,
             @Parameter(description = "評論內容", example = "商品非常好！", required = true)
-            @RequestParam String content,
+            @RequestParam String comment,
             @Parameter(description = "圖片 URL（可選）", example = "被評論商品的url")
             @RequestParam(required = false) String imgURL,
-            Authentication authentication){
+            Authentication authentication
+    ){
         try {
-            String currentUserId = authentication.getName();
-            Review updated = reviewService.editReview(reviewId, currentUserId, starCount, content, imgURL);
+            String username = authentication.getName();
+            String currentUserId =userService.getUserInfo(username).id() ;//取得目前使用者的id來驗證
+            Review updated = reviewService.editReview(reviewId, currentUserId, starCount, comment, imgURL);
             return ResponseEntity.ok(updated);
         }
-        catch (IllegalStateException | IllegalArgumentException e){
+        catch (SecurityException e){
+            return ResponseEntity.status(403).body(e.getMessage());
+        }
+        catch (IllegalStateException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
         catch (Exception e){
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
+    //依商品ID取得評論
+    @GetMapping("/byProduct/{productID}")
+    @Operation(
+            summary = "依商品ID取得評論",
+            description = "回傳指定商品的所有評論"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功取得評論列表",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Review.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "該商品沒有任何評論",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "伺服器錯誤",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+    public ResponseEntity<List<Review>> getReviewsByProductId(
+            @Parameter(description = "商品ID", example = "PROD5B82D1D6", required = true)
+            @PathVariable String productID) {
+        try {
+            List<Review> reviews = reviewService.getReviewByProductId(productID);
+            return ResponseEntity.ok(reviews);
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(null);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
 
+    @GetMapping("/byUser/{userID}")
+    @Operation(
+            summary = "依使用者ID取得評論",
+            description = "回傳指定使用者的所有評論"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功取得評論列表",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Review.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "該使用者沒有任何評論",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "伺服器錯誤",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+    public ResponseEntity<List<Review>> getReviewsByUserId(
+            @Parameter(description = "使用者ID", example = "USER123", required = true)
+            @PathVariable String userID) {
+        try {
+            List<Review> reviews = reviewService.getReviewByUserId(userID);
+            return ResponseEntity.ok(reviews);
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(null);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
     @GetMapping("/history")
     @Operation(
             summary = "取得所有評論歷史",
@@ -156,11 +248,10 @@ public class ReviewController {
                             schema = @Schema(implementation = Review.class),
                             examples = @ExampleObject(
                                     value = "[{\n" +
-                                            "  \"reviewID\": \"REV123\",\n" +
-                                            "  \"productID\": \"P001\",\n" +
+                                            "  \"productID\": \"PROD5B82D1D6\",\n" +
                                             "  \"userID\": \"USER123\",\n" +
                                             "  \"starCount\": 5,\n" +
-                                            "  \"content\": \"商品非常好！\",\n" +
+                                            "  \"comment\": \"商品非常好！\",\n" +
                                             "  \"imgURL\": \"被評論商品的url\"\n" +
                                             "}]"
                             )
@@ -168,6 +259,7 @@ public class ReviewController {
             ),
             @ApiResponse(responseCode = "500", description = "伺服器錯誤", content = @Content(mediaType = "text/plain"))
     })
+
     public ResponseEntity<List<?>> getAllReviewHistory(){
         return ResponseEntity.ok(reviewService.getAllReviewHistory());
     }

@@ -93,8 +93,8 @@ public class BidController {
             String username=authentication.getName();
             String currentUserId=userService.getUserInfo(username).id();
             //time要符合yyyy/MM/ddTHH:mm:ss格式
-            LocalDateTime auctionEndTime = LocalDateTime.parse(endTime);
-            Product auctionProduct=bidservice.createAuction(basicBidPrice,auctionEndTime,productID,currentUserId);
+            LocalDateTime auctionEndTime = LocalDateTime.parse(endTime.trim());
+            Product auctionProduct=bidservice.createAuction(basicBidPrice,auctionEndTime,productID.trim(),currentUserId);
 
             return ResponseEntity.ok("Auction created successfully! ProductID: " + auctionProduct.getProductID());
         }
@@ -213,7 +213,7 @@ public class BidController {
         try{
             String username=authentication.getName();
             String currentUserId=userService.getUserInfo(username).id();
-            bidservice.placeBid(bidPrice,productID,bidderID,currentUserId);
+            bidservice.placeBid(bidPrice,productID.trim(),bidderID.trim(),currentUserId);
             return ResponseEntity.ok("Bid placed successfully!");
         }
         catch (IllegalArgumentException e) {
@@ -262,7 +262,7 @@ public class BidController {
             @Parameter(description = "商品ID", example = "PRODEE140C9E", required = true)
             @PathVariable String id){
         try{
-            bidservice.terminateAuction(id);
+            bidservice.terminateAuction(id.trim());
             return ResponseEntity.ok("Auction terminated");
         }
         catch (IllegalArgumentException e) {

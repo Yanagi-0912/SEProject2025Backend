@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public class Review {
     private String userName;
     private String userID;
+    @Id
     private String reviewID;
     private String productID;
     private String comment;//評論內容

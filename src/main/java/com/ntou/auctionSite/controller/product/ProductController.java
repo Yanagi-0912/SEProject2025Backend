@@ -110,7 +110,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             @Parameter(description = "商品ID", example = "PRODE31B4FC9", required = true)
             @PathVariable String id) {
         try {
-            return ResponseEntity.ok(productService.getProductById(id));
+            return ResponseEntity.ok(productService.getProductById(id.trim()));
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body("Product not found with ID: " + id);
@@ -212,19 +212,19 @@ public class ProductController { // 負責處理商品新增、上下架、查�
                     )
             ),
             @ApiResponse(
-                    responseCode = "404",
-                    description = "找不到商品",
-                    content = @Content(
-                            mediaType = "text/plain",
-                            examples = @ExampleObject(value = "Product not found with ID: P001")
-                    )
-            ),
-            @ApiResponse(
                     responseCode = "403",
                     description = "沒有權限修改商品",
                     content = @Content(
                             mediaType = "text/plain",
                             examples = @ExampleObject(value = "You are not authorized to edit this product")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "找不到商品",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "Product not found with ID: P001")
                     )
             ),
             @ApiResponse(
@@ -246,7 +246,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         try {
             String username = authentication.getName();
             String currentUserId = userService.getUserInfo(username).id();
-            Product updated = productService.editProduct(productID, request, currentUserId);
+            Product updated = productService.editProduct(productID.trim(), request, currentUserId);
             return ResponseEntity.ok("Product updated successfully! ProductID: " + updated.getProductID());
 
         }
@@ -299,7 +299,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         try {
             String username = authentication.getName();
             String currentUserId = userService.getUserInfo(username).id();
-            Product published = productService.publishProduct(productID,currentUserId);
+            Product published = productService.publishProduct(productID.trim(),currentUserId);
             System.out.println(username);
             System.out.println(currentUserId);
             return ResponseEntity.ok("Product published successfully! ProductID: " + published.getProductID());
@@ -349,7 +349,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         try {
             String username = authentication.getName();
             String currentUserId = userService.getUserInfo(username).id();
-            Product withdrawn = productService.withdrawProduct(productID,currentUserId);
+            Product withdrawn = productService.withdrawProduct(productID.trim(),currentUserId);
             return ResponseEntity.ok("Product withdrawn successfully! ProductID: " + withdrawn.getProductID());
         }
         catch (NoSuchElementException e) {
@@ -396,7 +396,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
         try {
             String username=authentication.getName();
             String currentUserId=userService.getUserInfo(username).id();
-            productService.deleteProduct(productID,currentUserId);
+            productService.deleteProduct(productID.trim(),currentUserId);
             return ResponseEntity.ok("Product deleted successfully! ProductID: " + productID);
         }
         catch (NoSuchElementException e) {
