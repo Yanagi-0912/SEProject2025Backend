@@ -1,7 +1,6 @@
 package com.ntou.auctionSite.model.user;
 
 import com.ntou.auctionSite.model.product.Product;
-import com.ntou.auctionSite.model.cart.Cart;
 import com.ntou.auctionSite.model.history.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +35,8 @@ public class User implements UserDetails { // 使用者實作 UserDetails 介面
 
     private String password;        // 密碼
 
-    private Cart cart = new Cart(); // 購物車，預設為空的購物車
+    // 注意：購物車資料存放在獨立的 Cart collection 中，不在 User 物件內
+    // 透過 CartService 來操作購物車
 
     private String userNickname;    // 使用者暱稱
 
