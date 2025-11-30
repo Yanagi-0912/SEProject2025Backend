@@ -2,12 +2,14 @@ package com.ntou.auctionSite.model.order;
 
 import com.ntou.auctionSite.model.cart.Cart;
 import com.ntou.auctionSite.model.product.ProductTypes;
+import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
+    @Id
     private String orderID;             //訂單編號
     private String buyerID;             //買家ID
     private String sellerID;            //賣家ID

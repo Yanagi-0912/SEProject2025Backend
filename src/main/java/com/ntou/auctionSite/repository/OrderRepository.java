@@ -9,8 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends MongoRepository<Order,String> {
-    Optional<Order> findByOrderID(String orderID);
-    //?0表示第1個欄位
-    @Query("{ 'cart.userId': ?0, 'cart.orderStatus': ?1, 'cart.orderItems.productID': ?2 }")
+    //?0表示第1個欄位 $elemMatch 會找出陣列中至少有一個物件符合條件
+    @Query("{ 'buyerID': ?0, 'orderStatus': ?1, 'orderItems': { $elemMatch: { 'productID': ?2 } } }")
     Optional<Order> findBuyedProduct(String buyerID,Order.OrderStatuses status, String productID);
 }

@@ -78,19 +78,27 @@ public class OrderService {
         }
         //訂單ID設為隨機10碼
         order.setBuyerID(buyerID);
-        order.setOrderID(UUID.randomUUID().toString().substring(0, 10).toUpperCase());//訂單用隨機id
+        order.setOrderID("ORD" + UUID.randomUUID().toString().substring(0, 10).toUpperCase());//訂單用隨機id
         order.setOrderType(types);
         order.setOrderTime(LocalDateTime.now());
         order.setOrderStatus(Order.OrderStatuses.PENDING);
         order.setOrderItems(orderItems);
         return orderRepository.save(order);
     }
-
-    public Order getOrderById(String orderID){
-            return orderRepository.findByOrderID(orderID)
-                    .orElseThrow(() -> new NoSuchElementException("Order not found with orderID: " + orderID));
+    //付款功能
+    public Order payOrder(String orderID){
+        Order order=getOrderById(orderID);
+        //pending才可以結帳
+        if(order.getOrderStatus()!= Order.OrderStatuses.PENDING){
+            throw new IllegalStateException("Order cannot be paid because it is not in PENDING status!");
+        }
+        order.setOrderStatus(Order.OrderStatuses.COMPLETED);
+        return orderRepository.save(order);
     }
 
-
+    public Order getOrderById(String orderID){
+            return orderRepository.findById(orderID)
+                    .orElseThrow(() -> new NoSuchElementException("Order not found with orderID: " + orderID));
+    }
 }
 
