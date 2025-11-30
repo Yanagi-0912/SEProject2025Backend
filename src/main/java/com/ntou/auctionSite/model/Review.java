@@ -14,7 +14,7 @@ public class Review {
     private LocalDateTime createdTime;//建立評論的時間
     private LocalDateTime updatedTime;//修改評論的時間
     private String imgURL;//
-    int startCount;//1-5顆星
+    int starCount;//1-5顆星
     //建立評論
     public Review() {
     }
@@ -44,6 +44,6 @@ public class Review {
     public String getImgURL(){return imgURL;};
     public void setImgURL(String imgURL){this.imgURL= imgURL;}
 
-    public int getStartCount(){return startCount;};
-    public void setStartCount(int startCount){this.startCount= startCount;}
+    public int getStarCount(){return starCount;};
+    public void setStarCount(int startCount){this.starCount= startCount;}
 }

@@ -124,8 +124,40 @@ public class ReviewController {
                             )
                     )
             ),
-            @ApiResponse(responseCode = "400", description = "評論更新失敗", content = @Content(mediaType = "text/plain")),
-            @ApiResponse(responseCode = "500", description = "伺服器錯誤", content = @Content(mediaType = "text/plain"))
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "評論更新失敗",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "The currently logged-in user is not the seller " +
+                                    "of the item to be auctioned; auction creation failed.")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "拒絕執行",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "The currently logged-in user is not the buyer " +
+                                    "you can't edit other people review")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "找不到評論",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "Review not found with ID: REV123456")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "伺服器錯誤",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "Server error: xxx")
+                    )
+            ),
     })
     public ResponseEntity<?> editReview(
             @Parameter(description = "評論ID", example = "REV123", required = true)
@@ -147,6 +179,9 @@ public class ReviewController {
         catch (SecurityException e){
             return ResponseEntity.status(403).body(e.getMessage());
         }
+        catch (NoSuchElementException e){
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
         catch (IllegalStateException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -166,18 +201,46 @@ public class ReviewController {
                     description = "成功取得評論列表",
                     content = @Content(
                             mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "成功取得評論",
+                                    value = """
+                                [
+                                  {
+                                    "reviewID": "REV12345",
+                                    "productID": "PROD5B82D1D6",
+                                    "userID": "USER987",
+                                    "rating": 5,
+                                    "comment": "品質很好，出貨速度快！",
+                                    "createdTime": "2025-05-01T12:30:00"
+                                  },
+                                  {
+                                    "reviewID": "REV67890",
+                                    "productID": "PROD5B82D1D6",
+                                    "userID": "USER555",
+                                    "rating": 4,
+                                    "comment": "商品不錯，但包裝稍微簡單。",
+                                    "createdTime": "2025-05-03T09:10:20"
+                                  }
+                                ]
+                                """
+                            ),
                             schema = @Schema(implementation = Review.class)
                     )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "該商品沒有任何評論",
-                    content = @Content(mediaType = "text/plain")
+                    content = @Content(mediaType = "text/plain",
+                            examples = @ExampleObject(value = "Review not found with productID: PROD5B82D1D6")
+                    )
+
             ),
             @ApiResponse(
                     responseCode = "500",
                     description = "伺服器錯誤",
-                    content = @Content(mediaType = "text/plain")
+                    content = @Content(mediaType = "text/plain",
+                            examples = @ExampleObject(value = "Server error: xxx")
+                    )
             )
     })
     public ResponseEntity<List<Review>> getReviewsByProductId(
@@ -206,22 +269,48 @@ public class ReviewController {
                     description = "成功取得評論列表",
                     content = @Content(
                             mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "成功取得評論",
+                                    value = """
+                                [
+                                  {
+                                    "reviewID": "REV12345",
+                                    "productID": "PROD5B82D1D6",
+                                    "userID": "USER987",
+                                    "rating": 5,
+                                    "comment": "品質很好，出貨速度快！",
+                                    "createdTime": "2025-05-01T12:30:00"
+                                  },
+                                  {
+                                    "reviewID": "REV67890",
+                                    "productID": "PROD5B82D1D6",
+                                    "userID": "USER555",
+                                    "rating": 4,
+                                    "comment": "商品不錯，但包裝稍微簡單。",
+                                    "createdTime": "2025-05-03T09:10:20"
+                                  }
+                                ]
+                                """
+                            ),
                             schema = @Schema(implementation = Review.class)
                     )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "該使用者沒有任何評論",
-                    content = @Content(mediaType = "text/plain")
+                    content = @Content(mediaType = "text/plain",
+                    examples = @ExampleObject(value = "Review not found with userID: 691efc78bf1f02b8adb0dffc"))
             ),
             @ApiResponse(
                     responseCode = "500",
                     description = "伺服器錯誤",
-                    content = @Content(mediaType = "text/plain")
+                    content = @Content(mediaType = "text/plain",
+                    examples = @ExampleObject(value="Server error: xxx")
+                    )
             )
     })
     public ResponseEntity<List<Review>> getReviewsByUserId(
-            @Parameter(description = "使用者ID", example = "USER123", required = true)
+            @Parameter(description = "使用者ID", example = "691efc78bf1f02b8adb0dffc", required = true)
             @PathVariable String userID) {
         try {
             List<Review> reviews = reviewService.getReviewByUserId(userID);

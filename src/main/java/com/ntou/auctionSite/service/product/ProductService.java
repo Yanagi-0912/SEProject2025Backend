@@ -29,6 +29,51 @@ public class ProductService {
             return Collections.emptyList();//回傳一個不可更改的空list
         }
     }
+    //默認升序
+    public List<Product> getAllProductSorted(String sortBy,String order){
+        List<Product> productList=getAllProduct();
+        Comparator<Product> comparator;
+        switch(sortBy.trim()){
+            case "productPrice":
+                comparator=Comparator.comparing(Product::getProductPrice);
+                break;
+            case "productStock":
+                comparator=Comparator.comparing(Product::getProductStock);
+                break;
+            case "createdTime":
+                comparator=Comparator.comparing(Product::getCreatedTime);
+                break;
+            case "updatedTime":
+                comparator=Comparator.comparing(Product::getUpdatedTime);
+                break;
+            case "auctionEndTime":
+                comparator=Comparator.comparing(Product::getAuctionEndTime);
+                break;
+            case "nowHighestBid":
+                comparator=Comparator.comparing(Product::getNowHighestBid);
+                break;
+            case "viewCount":
+                comparator=Comparator.comparing(Product::getViewCount);
+                break;
+            case "averageRating":
+                comparator=Comparator.comparing(Product::getAverageRating);
+                break;
+            case "reviewCount":
+                comparator=Comparator.comparing(Product::getReviewCount);
+                break;
+            case "totalSales":
+                comparator=Comparator.comparing(Product::getTotalSales);
+                break;
+            default:
+                comparator=Comparator.comparing(Product::getProductName);
+                break;
+        }
+        if(order.trim().equals("desc")){
+            comparator = comparator.reversed();
+        }
+        productList.sort(comparator);
+        return productList;
+    }
 
     public Product getProductById(String ProductID) {
         return repository.findById(ProductID)
@@ -133,6 +178,20 @@ public class ProductService {
             // 如果之前因為庫存為0被設為 INACTIVE，現在有庫存就恢復 ACTIVE
             product.setProductStatus(Product.ProductStatuses.ACTIVE);
         }
+    }
+
+    public List<String> getAllCategory(){
+
+        Set<String> categories=new HashSet<String>() ;
+        List<Product> productList=getAllProduct();
+        for(Product temp:productList){
+            if(temp.getProductCategory()!=null && !temp.getProductCategory().isEmpty()){
+                categories.add(temp.getProductCategory().trim());
+            }
+        }
+        List<String> result = new ArrayList<>(categories);
+        Collections.sort(result);
+        return result;
     }
     private void trimProductFields(Product p) {//將字串型態欄位去除空白
         if (p.getProductName() != null) p.setProductName(p.getProductName().trim());

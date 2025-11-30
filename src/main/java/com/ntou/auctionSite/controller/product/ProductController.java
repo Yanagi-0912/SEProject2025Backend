@@ -31,6 +31,8 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     private UserService userService;
     @Autowired
     private UserRepository userRepository;
+
+    //取得所有商品
     //<?>表示可以是任何型態,前端可以提供第幾頁、每頁大小
     @GetMapping
     @Operation(
@@ -49,6 +51,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
                             )
                     )
             ),
+            @ApiResponse(responseCode = "404", description = "找不到商品"),
             @ApiResponse(
                     responseCode = "500",
                     description = "伺服器錯誤",
@@ -58,6 +61,7 @@ public class ProductController { // 負責處理商品新增、上下架、查�
                     )
             )
     })
+
     public ResponseEntity<?> getAllProduct(
             @Parameter(description = "頁碼（從1開始）", example = "1")
             @RequestParam(defaultValue = "1") int page,
@@ -67,8 +71,36 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             List<Product> products = productService.getProductsByPage(page, pageSize);
             return ResponseEntity.ok(products);
         }
+        catch (NoSuchElementException e){
+            return ResponseEntity.status(404).body("Product not found"+e.getMessage());
+        }
         catch (Exception e) {
             return ResponseEntity.status(500).body("Error fetching products: " + e.getMessage());
+        }
+    }
+
+    //根據輸入參數取得排序後商品
+    @GetMapping("sorted")
+    @Operation(summary = "取得所有商品（可排序）")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "成功取得排序後的商品列表"),
+            @ApiResponse(responseCode = "404", description = "找不到商品")
+    })
+    public ResponseEntity<?> getAllProductsSorted(
+            @Parameter(description = "輸入商品屬性並針對其作排序，輸入不存在的屬性預設依照名稱排序")
+            @RequestParam(defaultValue = "productName") String sortBy,
+            @Parameter(description = "輸入desc為降序排序，輸入其他值就用升序排序")
+            @RequestParam(defaultValue = "asce") String order
+    ) {
+        try {
+            List<Product> products = productService.getAllProductSorted(sortBy, order);
+            return ResponseEntity.ok(products);
+        }
+        catch (NoSuchElementException e){
+            return ResponseEntity.status(404).body("Product not found"+e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
 
@@ -403,6 +435,65 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             return ResponseEntity.status(404).body("Product not found with ID: " + productID);
         }
         catch (Exception e) {
+            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/Category")
+    @Operation(
+            summary = "取得所有商品分類",
+            description = "回傳系統內所有商品的分類列表"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功取得分類列表",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "成功取得分類列表",
+                                    value = """
+                                [
+                                  "3C周邊",
+                                  "家具",
+                                  "文具",
+                                  "運動用品"
+                                ]
+                                """
+                            ),
+                            schema = @Schema(implementation = String.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "沒有任何分類",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(
+                                    value = "No category!"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "伺服器錯誤",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(
+                                    value = "Server error: xxx"
+                            )
+                    )
+            )
+    })
+    public ResponseEntity<?> getAllCategory(){
+        try{
+            List<String> result=productService.getAllCategory();
+            return ResponseEntity.ok(result);
+        }
+        catch (NoSuchElementException e){
+            return ResponseEntity.status(404).body("No category!");
+        }
+        catch (Exception e){
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
