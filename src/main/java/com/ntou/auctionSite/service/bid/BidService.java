@@ -96,7 +96,7 @@ public class BidService {
         }
         else{
             auctionProduct.setNowHighestBid(bidPrice);
-            auctionProduct.setProductPrice(bidPrice);
+            //auctionProduct.setProductPrice(bidPrice);
             auctionProduct.setUpdatedTime(LocalDateTime.now());
             auctionProduct.setHighestBidderID(bidderID);
             repository.save(auctionProduct);

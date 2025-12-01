@@ -29,6 +29,51 @@ public class ProductService {
             return Collections.emptyList();//回傳一個不可更改的空list
         }
     }
+    //默認升序
+    public List<Product> getAllProductSorted(String sortBy,String order){
+        List<Product> productList=getAllProduct();
+        Comparator<Product> comparator;
+        switch(sortBy.trim()){
+            case "productPrice":
+                comparator=Comparator.comparing(Product::getProductPrice);
+                break;
+            case "productStock":
+                comparator=Comparator.comparing(Product::getProductStock);
+                break;
+            case "createdTime":
+                comparator=Comparator.comparing(Product::getCreatedTime);
+                break;
+            case "updatedTime":
+                comparator=Comparator.comparing(Product::getUpdatedTime);
+                break;
+            case "auctionEndTime":
+                comparator=Comparator.comparing(Product::getAuctionEndTime);
+                break;
+            case "nowHighestBid":
+                comparator=Comparator.comparing(Product::getNowHighestBid);
+                break;
+            case "viewCount":
+                comparator=Comparator.comparing(Product::getViewCount);
+                break;
+            case "averageRating":
+                comparator=Comparator.comparing(Product::getAverageRating);
+                break;
+            case "reviewCount":
+                comparator=Comparator.comparing(Product::getReviewCount);
+                break;
+            case "totalSales":
+                comparator=Comparator.comparing(Product::getTotalSales);
+                break;
+            default:
+                comparator=Comparator.comparing(Product::getProductName);
+                break;
+        }
+        if(order.trim().equals("desc")){
+            comparator = comparator.reversed();
+        }
+        productList.sort(comparator);
+        return productList;
+    }
 
     public Product getProductById(String ProductID) {
         return repository.findById(ProductID)
@@ -50,6 +95,7 @@ public class ProductService {
     public Product createProduct(Product product,String currentUserId){//創建商品
         String randomId;
         product.setSellerID(currentUserId);//先設定sellerID再檢查
+        trimProductFields(product);
         List<Product> existing = repository.findBySellerIDAndProductName(
                 product.getSellerID(), product.getProductName());
         if(!existing.isEmpty()) {
@@ -70,7 +116,8 @@ public class ProductService {
     }
     public Product editProduct(String productId, EditProductRequest request, String currentUserId) {
         Product product = getProductById(productId);
-
+        trimProductFields(product);
+        trimEditRequest(request);
         // 限制只能改自己上架的商品
         if (!product.getSellerID().equals(currentUserId)) {
             throw new SecurityException("You are not authorized to edit this product");
@@ -132,6 +179,35 @@ public class ProductService {
             product.setProductStatus(Product.ProductStatuses.ACTIVE);
         }
     }
+
+    public List<String> getAllCategory(){
+
+        Set<String> categories=new HashSet<String>() ;
+        List<Product> productList=getAllProduct();
+        for(Product temp:productList){
+            if(temp.getProductCategory()!=null && !temp.getProductCategory().isEmpty()){
+                categories.add(temp.getProductCategory().trim());
+            }
+        }
+        List<String> result = new ArrayList<>(categories);
+        Collections.sort(result);
+        return result;
+    }
+    private void trimProductFields(Product p) {//將字串型態欄位去除空白
+        if (p.getProductName() != null) p.setProductName(p.getProductName().trim());
+        if (p.getProductDescription() != null) p.setProductDescription(p.getProductDescription().trim());
+        if (p.getProductImage() != null) p.setProductImage(p.getProductImage().trim());
+        if (p.getProductCategory() != null) p.setProductCategory(p.getProductCategory().trim());
+        if (p.getSellerID() != null) p.setSellerID(p.getSellerID().trim());
+    }
+
+    private void trimEditRequest(EditProductRequest req) {//將字串型態欄位去除空白
+        if (req.getProductName() != null) {req.setProductName(req.getProductName().trim());}
+        if (req.getProductDescription() != null) {req.setProductDescription(req.getProductDescription().trim());}
+        if (req.getProductImage() != null) {req.setProductImage(req.getProductImage().trim());}
+        if (req.getProductCategory() != null) {req.setProductCategory(req.getProductCategory().trim());}
+    }
+
     private void validateProductFields(Product product) {//驗證商品欄位
         int price=product.getProductPrice();
         String priceStr = String.valueOf(price);//轉成字串，方便後面探段位數

@@ -54,7 +54,7 @@ public class SearchController {
             @Parameter(description = "搜尋關鍵字 (商品名稱)", required = true, example = "巧克力餅乾")
             @RequestParam String keyword){
         try{
-            return ResponseEntity.ok(searchService.searchByKeyword(keyword));
+            return ResponseEntity.ok(searchService.searchByKeyword(keyword.trim()));
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body("(Precise search)No result for keyword:" + keyword);
@@ -93,7 +93,7 @@ public class SearchController {
             @Parameter(description = "搜尋關鍵字 (模糊比對)", required = true, example = "餅乾")
             @RequestParam String keyword){
         try{
-            return ResponseEntity.ok(searchService.blurSearch(keyword));
+            return ResponseEntity.ok(searchService.blurSearch(keyword.trim()));
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body("(Blursearch) No result for keyword:" + keyword);
