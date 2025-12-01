@@ -2,6 +2,8 @@ package com.ntou.auctionSite.service.user;
 
 import com.ntou.auctionSite.dto.user.FavoriteItemDTO;
 import com.ntou.auctionSite.dto.user.FavoriteResponseDTO;
+import com.ntou.auctionSite.dto.user.SimpleFavoriteItemDTO;
+import com.ntou.auctionSite.dto.user.SimpleFavoriteResponseDTO;
 import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.model.user.Favorite;
 import com.ntou.auctionSite.model.user.User;
@@ -79,6 +81,31 @@ public class FavoriteService {
                 .collect(Collectors.toList());
 
         return new FavoriteResponseDTO(userId, items, items.size());
+    }
+
+    /**
+     * READ - 取得使用者收藏清單（簡化版，只包含商品 ID）
+     * 不查詢商品詳細資訊，只回傳商品 ID 列表
+     *
+     * @param userId 使用者 ID（必須是 User._id，不是 userName）
+     */
+    public SimpleFavoriteResponseDTO getSimpleUserFavorites(String userId) {
+        // 0. 驗證使用者是否存在
+        validateUserExists(userId);
+
+        // 1. 從資料庫查詢收藏清單
+        Favorite favorite = favoriteRepository.findByUserId(userId)
+                .orElse(new Favorite(userId, userId, new ArrayList<>()));
+
+        // 2. 轉換為簡化 DTO（只包含 productId 和 addedAt）
+        List<SimpleFavoriteItemDTO> items = favorite.getItems().stream()
+                .map(item -> new SimpleFavoriteItemDTO(
+                        item.getProductId(),
+                        item.getAddedAt()
+                ))
+                .collect(Collectors.toList());
+
+        return new SimpleFavoriteResponseDTO(userId, items, items.size());
     }
 
     /**

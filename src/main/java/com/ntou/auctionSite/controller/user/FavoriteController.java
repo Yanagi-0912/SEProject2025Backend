@@ -1,6 +1,7 @@
 package com.ntou.auctionSite.controller.user;
 
 import com.ntou.auctionSite.dto.user.FavoriteResponseDTO;
+import com.ntou.auctionSite.dto.user.SimpleFavoriteResponseDTO;
 import com.ntou.auctionSite.service.user.FavoriteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -76,6 +77,51 @@ public class FavoriteController {
             @PathVariable String userId) {
         try {
             FavoriteResponseDTO response = favoriteService.getUserFavorites(userId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("取得收藏清單失敗: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{userId}/simple")
+    @Operation(
+            summary = "【READ】取得使用者收藏清單（簡化版）",
+            description = "只回傳商品 ID 和加入時間，不查詢商品詳細資訊。適合用於快速檢查收藏狀態或前端快取。"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功取得簡化收藏清單",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SimpleFavoriteResponseDTO.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                    {
+                                      "userId": "U001",
+                                      "items": [
+                                        {
+                                          "productId": "P001",
+                                          "addedAt": "2025-11-29T10:30:00"
+                                        },
+                                        {
+                                          "productId": "P005",
+                                          "addedAt": "2025-11-28T15:20:00"
+                                        }
+                                      ],
+                                      "totalItems": 2
+                                    }
+                                    """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "500", description = "伺服器錯誤")
+    })
+    public ResponseEntity<SimpleFavoriteResponseDTO> getSimpleUserFavorites(
+            @Parameter(description = "使用者 ID", example = "U001", required = true)
+            @PathVariable String userId) {
+        try {
+            SimpleFavoriteResponseDTO response = favoriteService.getSimpleUserFavorites(userId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new RuntimeException("取得收藏清單失敗: " + e.getMessage());
