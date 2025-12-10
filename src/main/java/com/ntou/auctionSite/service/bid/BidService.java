@@ -121,8 +121,10 @@ public class BidService {
     // 終止拍賣（時間到後執行）
     public void terminateAuction(String productID){//結束競拍
         Product auctionProduct = productService.getProductById(productID);
-        if (auctionProduct==null) {
-            throw new NoSuchElementException("Product not found: " + productID);
+        if (auctionProduct.getHighestBidderID()==null) {//假如沒人出價，不能建立訂單
+            auctionProduct.setProductStatus(Product.ProductStatuses.INACTIVE);
+            repository.save(auctionProduct);
+            return;
         }
 
         if (auctionProduct.getProductType() != ProductTypes.AUCTION) {//必須檢查是拍賣商品
@@ -136,18 +138,23 @@ public class BidService {
         LocalDateTime currentTime=LocalDateTime.now();
         //compareTo比較兩個localdate，>0表示前者比較晚發生
         if(currentTime.compareTo(auctionProduct.getAuctionEndTime()) >0){
-            System.out.println("Auction is terminated.Current time: "+timeFormatter.format(currentTime));
-            auctionProduct.setProductStatus(Product.ProductStatuses.SOLD);//設定為已售出
-            System.out.println("Auction winner is ID:"+auctionProduct.getHighestBidderID());
-            repository.save(auctionProduct);
-            // 自動建立訂單
-            Cart cart = new Cart();
-            //先放進購物車
-            Cart.CartItem cartItem = new Cart.CartItem(auctionProduct.getProductID(), 1);
-            cart.getItems().add(cartItem);
-            Order order = new Order();
-            order.setCart(cart);
-            orderService.createOrder(order,auctionProduct.getHighestBidderID(),ProductTypes.AUCTION);
+            if(auctionProduct.getHighestBidderID()!=null){
+                System.out.println("Auction is terminated.Current time: "+timeFormatter.format(currentTime));
+                auctionProduct.setProductStatus(Product.ProductStatuses.SOLD);//設定為已售出
+                System.out.println("Auction winner is ID:"+auctionProduct.getHighestBidderID());
+                repository.save(auctionProduct);
+                // 自動建立訂單
+                Cart cart = new Cart();
+                //先放進購物車
+                Cart.CartItem cartItem = new Cart.CartItem(auctionProduct.getProductID(), 1);
+                cart.getItems().add(cartItem);
+                Order order = new Order();
+                order.setCart(cart);
+                orderService.createOrder(order,auctionProduct.getHighestBidderID(),ProductTypes.AUCTION);
+            }
+            else{
+
+            }
         }
         else{
             throw new IllegalStateException("The auction can't be terminate! \n " +

@@ -1,15 +1,13 @@
 package com.ntou.auctionSite.service.user;
 
-import com.ntou.auctionSite.model.user.Coupon;
-import com.ntou.auctionSite.model.user.CouponType;
-import com.ntou.auctionSite.model.user.UserCoupon;
+import com.ntou.auctionSite.model.coupon.Coupon;
+import com.ntou.auctionSite.model.coupon.UserCoupon;
 import com.ntou.auctionSite.repository.OrderRepository;
 import com.ntou.auctionSite.repository.UserCouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -68,7 +66,7 @@ public class UserCouponService {
             return null;
 
         // 假設你的模板中有一張：COUP_FREESHIP
-        return issueCouponToUser(userID, "COUP_FREESHIP");
+        return issueCouponToUser(userID, "COUP85D2D6D4");
     }
 
 

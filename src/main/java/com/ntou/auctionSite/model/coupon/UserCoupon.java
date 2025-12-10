@@ -1,4 +1,4 @@
-package com.ntou.auctionSite.model.user;
+package com.ntou.auctionSite.model.coupon;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
