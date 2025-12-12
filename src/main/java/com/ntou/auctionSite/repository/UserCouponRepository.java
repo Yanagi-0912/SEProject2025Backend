@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface UserCouponRepository extends MongoRepository<UserCoupon,String> {
     List<UserCoupon> findByUserId(String userId);
+    UserCoupon findByCouponID(String couponId);
+    UserCoupon findByUserIdAndCouponID(String userId,String couponId);
 }

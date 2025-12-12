@@ -2,7 +2,7 @@ package com.ntou.auctionSite.controller.coupon;
 
 import com.ntou.auctionSite.model.coupon.Coupon;
 import com.ntou.auctionSite.model.product.Product;
-import com.ntou.auctionSite.service.user.CouponService;
+import com.ntou.auctionSite.service.Coupon.CouponService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -111,8 +111,6 @@ public class CouponController {
                                             "  \"discountType\": \"PERCENT\",\n" +
                                             "  \"discountValue\": 0.85,\n" +
                                             "  \"minPurchaseAmount\": 200,\n" +
-                                            "  \"used\": false,\n" +
-                                            "  \"usedTime\": null,\n" +
                                             "  \"createdTime\": \"2025-01-01T12:00:00\",\n" +
                                             "  \"maxUsage\": 1\n" +
                                             "}"
@@ -140,8 +138,6 @@ public class CouponController {
                                             "  \"discountType\": \"PERCENT\",\n" +
                                             "  \"discountValue\": 0.85,\n" +
                                             "  \"minPurchaseAmount\": 200,\n" +
-                                            "  \"used\": false,\n" +
-                                            "  \"usedTime\": null,\n" +
                                             "  \"createdTime\": \"2025-01-01T12:00:00\",\n" +
                                             "  \"maxUsage\": 1\n" +
                                             "}"

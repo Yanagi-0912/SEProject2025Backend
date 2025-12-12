@@ -121,6 +121,13 @@ public class BidService {
     // 終止拍賣（時間到後執行）
     public void terminateAuction(String productID){//結束競拍
         Product auctionProduct = productService.getProductById(productID);
+
+        if (auctionProduct.getProductStatus() != Product.ProductStatuses.ACTIVE) {
+            return;
+        }
+
+        auctionProduct.setProductStatus(Product.ProductStatuses.TERMINATE);
+        repository.save(auctionProduct);
         if (auctionProduct.getHighestBidderID()==null) {//假如沒人出價，不能建立訂單
             auctionProduct.setProductStatus(Product.ProductStatuses.INACTIVE);
             repository.save(auctionProduct);
@@ -143,8 +150,10 @@ public class BidService {
                 auctionProduct.setProductStatus(Product.ProductStatuses.SOLD);//設定為已售出
                 System.out.println("Auction winner is ID:"+auctionProduct.getHighestBidderID());
                 repository.save(auctionProduct);
+                String userId=auctionProduct.getHighestBidderID();
                 // 自動建立訂單
                 Cart cart = new Cart();
+
                 //先放進購物車
                 Cart.CartItem cartItem = new Cart.CartItem(auctionProduct.getProductID(), 1);
                 cart.getItems().add(cartItem);

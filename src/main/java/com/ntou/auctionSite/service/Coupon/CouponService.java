@@ -1,11 +1,12 @@
-package com.ntou.auctionSite.service.user;
+package com.ntou.auctionSite.service.Coupon;
 
 import com.ntou.auctionSite.model.coupon.Coupon;
 import com.ntou.auctionSite.model.coupon.CouponType;
-import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.repository.CouponRepository;
 import com.ntou.auctionSite.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class CouponService {//管理通用的優惠券
             throw new NoSuchElementException("Coupon not found");
         }
     }
+
     public Coupon createCoupon(Coupon coupon) {
         if (coupon == null) {
             throw new IllegalArgumentException("Coupon cannot be null");
@@ -124,4 +126,5 @@ public class CouponService {//管理通用的優惠券
             coupon.setExpireTime(coupon.getCreatedTime().plusDays(30));
         }
     }
+
 }
