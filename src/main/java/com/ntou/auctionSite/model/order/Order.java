@@ -17,6 +17,7 @@ public class Order {
     private LocalDateTime orderTime;    //訂單時間
     private ProductTypes orderType;     //訂單類型
     private OrderStatuses orderStatus;  //訂單狀態
+    private double totalPrice;             //結帳應付總金額
     public enum OrderStatuses { PENDING, COMPLETED, CANCELLED, REFUNDED } //待處理、已完成、已取消、已退款
     private List<OrderItem> orderItems = new ArrayList<>();//回傳訂單詳細資訊用的
 
@@ -44,6 +45,9 @@ public class Order {
     //訂單內容
     public Cart getCart() { return cart; }
     public void setCart(Cart cart) { this.cart = cart; }
+    //訂單總金額
+    public double getTotalPrice(){return totalPrice;}
+    public void setTotalPrice(double totalPrice){this.totalPrice=totalPrice;}
     //訂單狀態
     public OrderStatuses getOrderStatus() { return orderStatus; }
     public void setOrderStatus(OrderStatuses orderStatus) { this.orderStatus = orderStatus; }

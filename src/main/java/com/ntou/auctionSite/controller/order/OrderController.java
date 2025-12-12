@@ -165,9 +165,7 @@ public class OrderController {
         }
     }
 
-    //結帳
-    @Operation(summary = "依照訂單ID結帳")
-    @PutMapping("/pay/{orderID}")
+    @Operation(summary = "依照訂單ID結帳，並可套用優惠券")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -220,22 +218,28 @@ public class OrderController {
                     )
             )
     })
-
+    @PutMapping("/pay/{orderID}")
     public ResponseEntity<?> payOrder(
             @Parameter(description = "訂單ID", example = "ORDE2003F99-2", required = true)
             @PathVariable String orderID,
+            @Parameter(description = "優惠券ID（可選）", example = "COUP7EC9E12A", required = false)
+            @RequestParam(required = false) String couponID,
             Authentication authentication
     ){
         try {
             Order order = orderService.getOrderById(orderID.trim());
-            String username=authentication.getName();
+            String username = authentication.getName();
             String currentUserId = userService.getUserInfo(username).id();
-            //驗證購買者和目前user是否相同，避免他人亂下訂單
+
+            // 驗證購買者身份
             if (order.getBuyerID() != null && !order.getBuyerID().equals(currentUserId)) {
                 return ResponseEntity.status(403)
                         .body("You are not allowed to pay this order for another user!");
             }
-            Order paidOrder = orderService.payOrder(orderID);
+
+            // 呼叫 Service 結帳，傳入 couponID
+            Order paidOrder = orderService.payOrder(orderID, couponID);
+
             return ResponseEntity.ok("Order paid successfully! OrderID: " + paidOrder.getOrderID());
         }
         catch (NoSuchElementException e) {
@@ -248,6 +252,7 @@ public class OrderController {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
+
 
     //找訂單
     @Operation(

@@ -25,7 +25,7 @@ public class Product {
     private double averageRating;           //產品平均評分
     private int reviewCount;                //產品評論數量
     private int totalSales;                 //產品總銷售量
-    public enum ProductStatuses { ACTIVE, INACTIVE, SOLD, BANNED }//有效、無效、已售出、已封鎖
+    public enum ProductStatuses { ACTIVE, INACTIVE, SOLD, BANNED,TERMINATE }//有效、無效、已售出、已封鎖、已結束
 
     public Product() {
     }

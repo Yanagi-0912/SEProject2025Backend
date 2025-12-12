@@ -204,7 +204,6 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             // 從 Authentication 拿到目前使用者的 username 或 userId
             String username= authentication.getName(); // 或用 userService 查出完整 User
             String currentUserId = userService.getUserInfo(username).id();
-            System.out.println(currentUserId);
             Product saved = productService.createProduct(product, currentUserId);
             return ResponseEntity.status(201)
                     .body("Product created successfully! ProductID: " + saved.getProductID());
