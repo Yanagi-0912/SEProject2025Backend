@@ -1,19 +1,22 @@
 package com.ntou.auctionSite.model.history;
 
-//日期時間
+import lombok.Getter;
+import org.springframework.data.annotation.Id;
 import java.time.LocalDateTime;
 
 public class History {
-    final private LocalDateTime TimeStamp;
+    @Id
+    final private String HistoryID;
     final private String UserID;
+    @Getter
+    final private LocalDateTime TimeStamp;
+
     public History(String userID) {
+        this.HistoryID = java.util.UUID.randomUUID().toString();
         this.UserID = userID;
         this.TimeStamp = LocalDateTime.now();
     }
-    public LocalDateTime getTimeStamp() {
-        return TimeStamp;
-    }
-    public String getUserID() {
-        return UserID;
-    }
+
+    public String getHistoryID() { return HistoryID; }
+    public String getUserID() { return UserID; }
 }

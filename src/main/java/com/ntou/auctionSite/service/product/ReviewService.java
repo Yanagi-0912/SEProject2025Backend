@@ -3,9 +3,9 @@ package com.ntou.auctionSite.service.product;
 import com.ntou.auctionSite.model.Review;
 import com.ntou.auctionSite.model.order.Order;
 import com.ntou.auctionSite.model.product.Product;
-import com.ntou.auctionSite.model.user.User;
 import com.ntou.auctionSite.model.history.reviewHistory;
 import com.ntou.auctionSite.repository.*;
+import com.ntou.auctionSite.repository.history.HistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +61,7 @@ public class ReviewService {
         review.setCreatedTime(LocalDateTime.now());
         review.setStarCount(review.getStarCount());
         review.setComment(review.getComment());
-        reviewHistory rh=new reviewHistory(review.getUserID(), review.getReviewID(),review.getProductID(),"CREATED");
+        reviewHistory rh=new reviewHistory(review.getUserID(), review.getReviewID(),"CREATED");
         reviewHistories.add(rh);
         historyRepository.save(rh);
         productRepository.save(product);
@@ -102,7 +102,7 @@ public class ReviewService {
         review.setStarCount(starCount);
         review.setUpdatedTime(LocalDateTime.now());
 
-        reviewHistory rh = new reviewHistory(userID, review.getReviewID(), review.getProductID(), "EDIT");
+        reviewHistory rh = new reviewHistory(userID, review.getReviewID(), "EDIT");
         reviewHistories.add(rh);
         historyRepository.save(rh);
         productRepository.save(product);

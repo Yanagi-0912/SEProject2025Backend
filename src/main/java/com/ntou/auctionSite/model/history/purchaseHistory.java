@@ -1,16 +1,21 @@
 package com.ntou.auctionSite.model.history;
 
+import lombok.Getter;
+import java.util.ArrayList;
+
 public class purchaseHistory extends History{
-    final private String OrderID;
-    public purchaseHistory(String userID, String OrderID) {
+    @Getter
+    private ArrayList<HistoryItem> historyItems = new ArrayList<>();
+    @Getter
+    final private int ProductQuantity;
+    @Getter
+    final private ArrayList<String> ProductID = new ArrayList<>();
+    public purchaseHistory(String userID, ArrayList<String> ProductID, int productQuantity) {
         super(userID);
-        this.OrderID = OrderID;
-    }
-    public String getOrderID() {
-        return OrderID;
-    }
-    @Override
-    public String toString() {
-        return "purchaseHistory [OrderID=" + getOrderID() + ", getTimeStamp()=" + getTimeStamp() + ", getUserID()=" + getUserID() + "]";
+        this.ProductID.addAll(ProductID);
+        this.ProductQuantity = productQuantity;
+        for(String id : ProductID){
+            this.historyItems.add(new HistoryItem(id, productQuantity));
+        }
     }
 }

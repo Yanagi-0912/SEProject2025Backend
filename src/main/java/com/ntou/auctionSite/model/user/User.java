@@ -84,19 +84,6 @@ public class User implements UserDetails { // 使用者實作 UserDetails 介面
         return true;
     }
 
-
-    // ===== 以下欄位建議未來改為獨立 Collection =====
-    // 原因：資料量可能很大、高頻寫入、需要獨立查詢和分析
-
-    // 瀏覽歷史 - 建議改用獨立的 BrowseHistory collection
-    private ArrayList<browseHistory> browseHistoryArrayList;
-
-    // 購買歷史 - 建議使用現有的 Order collection
-    private ArrayList<purchaseHistory> purchaseHistoryArrayList;
-
-    // 競標歷史 - 建議改用獨立的 BidHistory collection
-    private ArrayList<bidHistory> bidHistoryArrayList;
-
     // ===== 注意：以下功能已使用獨立 Collection 實作 =====
     // - ownedProducts（販售商品）：透過 ProductRepository.findBySellerID(userId) 查詢
     //   參考：SellingProductsService
