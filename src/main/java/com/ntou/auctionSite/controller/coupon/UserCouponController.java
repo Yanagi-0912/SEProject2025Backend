@@ -108,6 +108,49 @@ public class UserCouponController {
         }
     }
 
+    // 抽隨機優惠券給使用者
+    @PostMapping("/draw")
+    @Operation(
+            summary = "抽取隨機優惠券給使用者",
+            description = "系統隨機從可用優惠券中抽取一張，發放給指定使用者"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功抽到並發放優惠券",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserCoupon.class),
+                            examples = @ExampleObject(
+                                    value = "{\n" +
+                                            "  \"userId\": \"USER123\",\n" +
+                                            "  \"couponID\": \"COUPBFBD3023\",\n" +
+                                            "  \"remainingUsage\": 1,\n" +
+                                            "  \"used\": false\n" +
+                                            "}"
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "無可抽的優惠券或發放失敗"),
+            @ApiResponse(responseCode = "403", description = "不可為其他使用者抽優惠券")
+    })
+    public ResponseEntity<?> drawCouponForUser(
+            @Parameter(description = "使用者 ID") @RequestParam String userId,
+            Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            String currentUserId = userService.getUserInfo(username).id();
+            if (!currentUserId.equals(userId)) {
+                return ResponseEntity.status(403).body("You cannot draw coupon for someone else");
+            }
+            UserCoupon uc = userCouponService.drawRandomCoupon(currentUserId);
+            return ResponseEntity.ok(uc);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(400).body("Draw failed: " + e.getMessage());
+        }
+    }
+
     //結帳套用優惠券
     @PostMapping("/apply")
     @Operation(summary = "結帳時更新優惠券使用次數，這個不用特地叫，已經寫在payorder內了")

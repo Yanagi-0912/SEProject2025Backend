@@ -35,6 +35,7 @@ public class OrderService {
         Cart cart= order.getCart();
         List<OrderItem> orderItems = new ArrayList<>();
         double totalPrice=0.0;
+        double defaultShippingFee=100.0;
         for (Cart.CartItem item : cart.getItems()) {
             Product product = productService.getProductById(item.getProductId());
             if (product == null) {
@@ -93,21 +94,22 @@ public class OrderService {
         order.setOrderTime(LocalDateTime.now());
         order.setOrderStatus(Order.OrderStatuses.PENDING);
         order.setOrderItems(orderItems);
-        order.setTotalPrice(totalPrice);
+        order.setShippingFee(defaultShippingFee);//運費預設100元
+        order.setTotalPrice(totalPrice+defaultShippingFee);
         return orderRepository.save(order);
     }
 
     //付款功能
     public Order payOrder(String orderID, String userCouponId){
         Order order = getOrderById(orderID);
-
+        double totalPrice=order.getTotalPrice();
         // pending才能付款
         if(order.getOrderStatus() != Order.OrderStatuses.PENDING){
             throw new IllegalStateException("Order cannot be paid because it is not in PENDING status!");
         }
 
-        // 套用優惠券 (如果有)
-        if(userCouponId != null && !userCouponId.isEmpty()){
+        // 套用優惠券 (如果有)，拍賣商品不適用優惠券
+        if(userCouponId != null && !userCouponId.isEmpty() && order.getOrderType()!=ProductTypes.AUCTION){
             UserCoupon userCoupon = userCouponService.applyCoupon(order.getBuyerID(),userCouponId, orderID);
 
             // 從 userCoupon.getCouponID() 拿到 Coupon
@@ -115,12 +117,26 @@ public class OrderService {
 
             double discountAmount = 0;
             switch (couponTemplate.getDiscountType()) {
-                case PERCENT -> discountAmount = order.getTotalPrice() * (1 - couponTemplate.getDiscountValue());
-                case FIXED -> discountAmount = couponTemplate.getDiscountValue();
-                //case FREESHIP -> discountAmount = order.getShippingFee(); // 假設有運費欄位
+                case PERCENT :
+                    discountAmount = order.getTotalPrice() * (1 - couponTemplate.getDiscountValue());
+                    break;
+                case FIXED :
+                    discountAmount = couponTemplate.getDiscountValue();
+                    break;
+                case FREESHIP:
+                    discountAmount = order.getShippingFee(); // 假設有運費欄位
+                    order.setShippingFee(0);
+                    break;
+                case BUY_ONE_GET_ONE:
+                    applyBuyOneGetOneDiscount(order);
+                    break;
             }
-
-            order.setTotalPrice(order.getTotalPrice() - discountAmount);
+            if(totalPrice>couponTemplate.getMinPurchaseAmount()){
+                order.setTotalPrice(order.getTotalPrice() - discountAmount);
+            }
+            else{
+                throw new IllegalStateException("Order total does not meet the minimum purchase amount for this coupon!");
+            }
         }
         else {
             order.setTotalPrice(order.getTotalPrice());
@@ -134,6 +150,37 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    private void applyBuyOneGetOneDiscount(Order order) {
+        //找出價格低於500的商品
+        List<OrderItem> orderItems=order.getOrderItems();
+        double maxPrice=500.0;//買一送一送的的商品價格最高500
+        double currentMax=0.0;
+        OrderItem sendProduct=null;
+        for(OrderItem item:orderItems){
+            if(item.getPrice()>currentMax && item.getPrice()<=maxPrice){
+                currentMax=item.getPrice();
+                sendProduct=item;
+            }
+        }
+        if(sendProduct!=null){
+            Product product=productService.getProductById(sendProduct.getProductID());
+            if (product.getProductStock() < 1) {
+                throw new IllegalStateException(
+                        "Insufficient stock for BUY_ONE_GET_ONE product: " + product.getProductID()
+                );
+            }
+            sendProduct.setQuantity(sendProduct.getQuantity() + 1);
+            product.setProductStock(product.getProductStock() - 1);//更新庫存
+            if (product.getProductStock() == 0) {
+                product.setProductStatus(Product.ProductStatuses.INACTIVE);
+            }
+            productRepository.save(product);
+
+        }
+        else{
+            throw new IllegalStateException("No suitable product for buy one get one");
+        }
+    }
 
     public Order getOrderById(String orderID){
             return orderRepository.findById(orderID)

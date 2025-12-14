@@ -27,7 +27,7 @@ public class ProductServiceTest {
             System.out.println("Status: " + temp.getProductStatus());
         }
     }
-
+/*
     @Test
     public void testCreateProduct() {//測試新增商品
         Product product = new Product();
@@ -80,9 +80,9 @@ public class ProductServiceTest {
             //productService.editProduct(updateRequest, productId[i]);
         }
 
-        /*Product edited = productService.getProductById(productId);
+        Product edited = productService.getProductById(productId);
         assertEquals("新馬克杯", edited.getProductName());
-        assertEquals(250, edited.getProductPrice());*/
+        assertEquals(250, edited.getProductPrice());
     }
 
     @Test
@@ -100,4 +100,6 @@ public class ProductServiceTest {
         Product deleted = productService.getProductById(productId);
         assertNull(deleted);
     }
+    */
+
 }

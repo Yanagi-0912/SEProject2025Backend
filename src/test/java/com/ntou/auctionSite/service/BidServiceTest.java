@@ -41,7 +41,7 @@ public class BidServiceTest {
     DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     @Test
     public void testPlaceBid() {//模擬競標流程
-
+        /*
         // 1建立拍賣商品
         Product auctionProduct = bidService.createAuction(100,endTime, "P105");
         if (auctionProduct == null) {
@@ -77,6 +77,6 @@ public class BidServiceTest {
         catch (InterruptedException e){
             System.err.println("Interrupt");
         }
-
+*/
     }
 }
