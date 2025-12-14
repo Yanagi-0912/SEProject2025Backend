@@ -40,11 +40,11 @@ public class HistoryService {
     public History saveHistory(History history) {
         return historyRepository.save(history);
     }
-
+    /* 刪除歷史記錄功能暫時不開放
     public void deleteHistory(String historyId) {
         historyRepository.deleteById(historyId);
     }
-
+    */
     // ===== BidHistory 操作 =====
 
     public List<bidHistory> getBidHistoriesByUserId(String userId) {
