@@ -7,11 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BrowseHistoryRepository extends HistoryRepository {
-    // 覆寫父類方法，返回更具體的類型
-    @Override
-    @Query("{ 'UserID': ?0 }")
-    List<browseHistory> findByUserID(String userId);
+public interface BrowseHistoryRepository extends HistoryRepository<browseHistory> {
+    // 繼承自父介面的 findByUserID 方法會自動回傳 List<browseHistory>
 
     @Query("{ 'ProductID': ?0 }")
     List<browseHistory> findByProductID(String productId);

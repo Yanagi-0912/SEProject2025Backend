@@ -13,7 +13,7 @@ import java.util.Optional;
 public class HistoryService {
 
     @Autowired
-    private HistoryRepository historyRepository;
+    private HistoryRepository<History> historyRepository;
 
     @Autowired
     private BidHistoryRepository bidHistoryRepository;

@@ -58,20 +58,23 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 允許的來源
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        // 允許所有來源 (開發測試用，生產環境請限制)
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
         // 允許的 HTTP 方法
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
-        // 允許的標頭
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        // 允許所有標頭
+        configuration.setAllowedHeaders(Arrays.asList("*"));
 
         // 允許傳送憑證 (JWT Token)
         configuration.setAllowCredentials(true);
 
         // 預檢請求的有效期 (1小時)
         configuration.setMaxAge(3600L);
+
+        // 暴露的響應標頭
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
