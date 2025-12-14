@@ -1,22 +1,18 @@
 package com.ntou.auctionSite.model.history;
 
+import lombok.Getter;
+
 public class bidHistory extends History{
-    final private String productID;
+    @Getter
+    private HistoryItem historyItem = null;
+    @Getter
     final private int bidAmount;
+    @Getter
+    final private String ProductID;
     public bidHistory(String userID, String productID, int bidAmount) {
         super(userID);
-        this.productID = productID;
+        this.ProductID = productID;
+        this.historyItem = new HistoryItem(productID, 1);
         this.bidAmount = bidAmount;
-    }
-    public String getProductID() {
-        return productID;
-    }
-    public double getBidAmount() {
-        return bidAmount;
-    }
-    @Override
-    public String toString() {
-        return "bidHistory [productID=" + productID + ", bidAmount=" + bidAmount + ", getTimeStamp()=" + getTimeStamp()
-                + ", getUserID()=" + getUserID() + "]";
     }
 }
