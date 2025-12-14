@@ -5,8 +5,6 @@ import com.ntou.auctionSite.model.coupon.CouponType;
 import com.ntou.auctionSite.repository.CouponRepository;
 import com.ntou.auctionSite.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

@@ -24,7 +24,7 @@ public class HolidayCouponScheduler {
     public void issueHolidayCoupon(){
         // 節日優惠
         List<String> holidays = Arrays.asList("1/1", "2/28", "4/4", "5/1", "9/28", "10/10", "12/25");
-        List<String> testdays = Arrays.asList("12/12","12/19");//純測試，之後可以刪除
+        List<String> testdays = Arrays.asList("12/14","12/19");//純測試，之後可以刪除
         LocalDateTime now = LocalDateTime.now();
         String today = now.getMonthValue() + "/" + now.getDayOfMonth();
         List<User> allUsers = userRepository.findAll();
