@@ -43,6 +43,8 @@ public class SecurityConfig {
                     .requestMatchers("/api/products/**").authenticated()              // 其他商品相關請求需要認證
                     .requestMatchers("/api/auth/**").permitAll()                      // 允許所有人訪問認證相關的端點
                     .requestMatchers("/api/search", "/api/blursearch").permitAll()    // 允許所有人訪問搜尋端點
+                    .requestMatchers(HttpMethod.GET, "/api/history/**").permitAll()   // 允許所有人查詢歷史記錄
+                    .requestMatchers(HttpMethod.POST, "/api/history/**").authenticated() // POST 歷史記錄需要認證
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // 允許訪問 Swagger UI
                     .anyRequest().authenticated();                                             // 其他請求需要認證
                     }

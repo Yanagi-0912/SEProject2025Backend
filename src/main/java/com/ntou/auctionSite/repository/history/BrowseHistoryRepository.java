@@ -13,7 +13,6 @@ public interface BrowseHistoryRepository extends HistoryRepository<browseHistory
     @Query("{ 'ProductID': ?0 }")
     List<browseHistory> findByProductID(String productId);
 
-    @Query("{ 'UserID': ?0, 'ProductID': ?1 }")
+    @Query("{ 'userID': ?0, 'ProductID': ?1 }")
     List<browseHistory> findByUserIDAndProductID(String userId, String productId);
 }
-

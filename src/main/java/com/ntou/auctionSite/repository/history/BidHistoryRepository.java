@@ -13,6 +13,6 @@ public interface BidHistoryRepository extends HistoryRepository<bidHistory> {
     @Query("{ 'ProductID': ?0 }")
     List<bidHistory> findByProductID(String productId);
 
-    @Query("{ 'UserID': ?0, 'ProductID': ?1 }")
+    @Query("{ 'userID': ?0, 'ProductID': ?1 }")
     List<bidHistory> findByUserIDAndProductID(String userId, String productId);
 }
