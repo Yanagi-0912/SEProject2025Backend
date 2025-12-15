@@ -1,12 +1,17 @@
 package com.ntou.auctionSite.model.history;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class reviewHistory extends History {
     private final String reviewID;
     private final String actionType; // CREATE or EDIT
 
-    public reviewHistory(String userID, String reviewID, String actionType) {
+    @JsonCreator
+    public reviewHistory(
+            @JsonProperty("userID") String userID,
+            @JsonProperty("reviewID") String reviewID,
+            @JsonProperty("actionType") String actionType) {
         super(userID);
         this.reviewID = reviewID;
         this.actionType = actionType;
@@ -14,12 +19,4 @@ public class reviewHistory extends History {
 
     public String getReviewID() {return reviewID;}
     public String getActionType() {return actionType;}
-
-    @Override
-    public String toString() {
-        return "reviewHistory [Action=" + actionType
-                + ", ReviewID=" + reviewID
-                + ", UserID=" + getUserID()
-                + ", TimeStamp=" + getTimeStamp() + "]";
-    }
 }

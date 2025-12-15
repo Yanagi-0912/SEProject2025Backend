@@ -1,22 +1,24 @@
 package com.ntou.auctionSite.model.history;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties(value = {"historyID", "timeStamp"}, allowGetters = true)
 public class History {
     @Id
-    final private String HistoryID;
-    final private String UserID;
+    private final String historyID;
+    private final String userID;
     @Getter
-    final private LocalDateTime TimeStamp;
+    private final LocalDateTime timeStamp;
 
     public History(String userID) {
-        this.HistoryID = java.util.UUID.randomUUID().toString();
-        this.UserID = userID;
-        this.TimeStamp = LocalDateTime.now();
+        this.historyID = java.util.UUID.randomUUID().toString();
+        this.userID = userID;
+        this.timeStamp = LocalDateTime.now();
     }
 
-    public String getHistoryID() { return HistoryID; }
-    public String getUserID() { return UserID; }
+    public String getHistoryID() { return historyID; }
+    public String getUserID() { return userID; }
 }

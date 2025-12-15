@@ -11,13 +11,14 @@ import java.util.Optional;
 @Repository
 public interface HistoryRepository<T extends History> extends MongoRepository<T,String> {
     // 查詢使用者的所有歷史記錄（返回 List）
-    @Query("{ 'UserID': ?0 }")
+    @Query("{ 'userID': ?0 }")
     List<T> findByUserID(String userId);
 
     // 根據 HistoryID 查詢單一歷史記錄（返回 Optional）
+    // 使用 _id 欄位查詢，因為 @Id 對應 MongoDB 的 _id
+    @Query("{ '_id': ?0 }")
     Optional<T> findByHistoryID(String historyID);
 
     // 查詢使用者的所有歷史記錄（別名方法）
     List<T> findAllByUserID(String userId);
 }
-

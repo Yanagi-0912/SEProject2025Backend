@@ -16,7 +16,6 @@ public interface ReviewHistoryRepository extends HistoryRepository<reviewHistory
     @Query("{ 'actionType': ?0 }")
     List<reviewHistory> findByActionType(String actionType);
 
-    @Query("{ 'UserID': ?0, 'actionType': ?1 }")
+    @Query("{ 'userID': ?0, 'actionType': ?1 }")
     List<reviewHistory> findByUserIDAndActionType(String userId, String actionType);
 }
-

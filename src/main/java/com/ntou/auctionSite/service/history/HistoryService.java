@@ -37,6 +37,35 @@ public class HistoryService {
         return historyRepository.findByHistoryID(historyId);
     }
 
+    /**
+     * 跨所有類型查詢歷史記錄 ID
+     * 會在所有子類型（bidHistory、browseHistory、purchaseHistory、reviewHistory）中查詢
+     */
+    public Optional<History> findHistoryByIdAcrossAllTypes(String historyId) {
+        // 依次嘗試在各個 Repository 中查詢
+        Optional<bidHistory> bid = bidHistoryRepository.findById(historyId);
+        if (bid.isPresent()) {
+            return Optional.of(bid.get());
+        }
+
+        Optional<browseHistory> browse = browseHistoryRepository.findById(historyId);
+        if (browse.isPresent()) {
+            return Optional.of(browse.get());
+        }
+
+        Optional<purchaseHistory> purchase = purchaseHistoryRepository.findById(historyId);
+        if (purchase.isPresent()) {
+            return Optional.of(purchase.get());
+        }
+
+        Optional<reviewHistory> review = reviewHistoryRepository.findById(historyId);
+        if (review.isPresent()) {
+            return Optional.of(review.get());
+        }
+
+        return Optional.empty();
+    }
+
     public History saveHistory(History history) {
         return historyRepository.save(history);
     }

@@ -1,7 +1,9 @@
 package com.ntou.auctionSite.controller.history;
 
+import com.ntou.auctionSite.dto.history.*;
 import com.ntou.auctionSite.model.history.*;
 import com.ntou.auctionSite.service.history.HistoryService;
+import com.ntou.auctionSite.utils.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/history")
@@ -23,6 +24,12 @@ public class HistoryController {
 
     @Autowired
     private HistoryService historyService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private com.ntou.auctionSite.service.product.ProductService productService;
 
     // ===== 通用歷史記錄查詢 =====
 
@@ -44,18 +51,26 @@ public class HistoryController {
         try {
             List<History> histories = historyService.searchAllHistoriesByUserId(userId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到使用者 " + userId + " 的歷史記錄");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到使用者的歷史記錄",
+                    "userId", userId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
     @GetMapping("/{historyId}")
     @Operation(
         summary = "根據歷史記錄 ID 查詢",
-        description = "根據歷史記錄 ID 查詢特定的歷史記錄"
+        description = "根據歷史記錄 ID 查詢特定的歷史記錄（支援所有子類型）"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "成功取得歷史記錄",
@@ -68,11 +83,21 @@ public class HistoryController {
             @Parameter(description = "歷史記錄 ID", required = true)
             @PathVariable String historyId) {
         try {
-            return historyService.getHistoryById(historyId)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.status(404).body(null));
+            var opt = historyService.findHistoryByIdAcrossAllTypes(historyId);
+            if (opt.isPresent()) {
+                return ResponseEntity.ok(opt.get());
+            }
+            return ResponseEntity.status(404).body(java.util.Map.of(
+                "status", 404,
+                "message", "找不到歷史記錄",
+                "historyId", historyId
+            ));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -96,11 +121,19 @@ public class HistoryController {
         try {
             List<bidHistory> histories = historyService.getBidHistoriesByUserId(userId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到使用者 " + userId + " 的競標歷史");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到使用者的競標歷史",
+                    "userId", userId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -122,25 +155,65 @@ public class HistoryController {
         try {
             List<bidHistory> histories = historyService.getBidHistoriesByProductId(productId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到商品 " + productId + " 的競標歷史");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到商品的競標歷史",
+                    "productId", productId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
     @PostMapping("/bid")
     @Operation(
         summary = "新增競標歷史記錄",
-        description = "創建新的競標歷史記錄"
+        description = "創建新的競標歷史記錄（userID 從 JWT token 中自動取得，historyItem 由系統自動設定）"
     )
-    public ResponseEntity<?> createBidHistory(@RequestBody bidHistory history) {
+    public ResponseEntity<?> createBidHistory(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CreateBidHistoryRequest request) {
         try {
+            // 從 JWT token 中提取 userID
+            String token = authHeader.replace("Bearer ", "");
+            String userID = jwtUtil.extractUsername(token);
+
+            // 建立歷史記錄
+            bidHistory history = new bidHistory(userID, request.getProductID(), request.getBidAmount());
+
+            // 查詢產品並設定 historyItem
+            try {
+                com.ntou.auctionSite.model.product.Product product = productService.getProductById(request.getProductID());
+                if (product != null) {
+                    HistoryItem item = new HistoryItem(
+                        request.getProductID(),
+                        product.getSellerID(),
+                        product.getProductName(),
+                        product.getProductCategory(),
+                        product.getProductPrice(),
+                        1,
+                        product.getProductPrice()
+                    );
+                    history.setHistoryItem(item);
+                }
+            } catch (Exception e) {
+                // 產品不存在或查詢失敗，historyItem 保持為 null
+            }
+
             bidHistory saved = historyService.saveBidHistory(history);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -164,11 +237,19 @@ public class HistoryController {
         try {
             List<browseHistory> histories = historyService.getBrowseHistoriesByUserId(userId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到使用者 " + userId + " 的瀏覽歷史");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到使用者的瀏覽歷史",
+                    "userId", userId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -190,25 +271,65 @@ public class HistoryController {
         try {
             List<browseHistory> histories = historyService.getBrowseHistoriesByProductId(productId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到商品 " + productId + " 的瀏覽歷史");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到商品的瀏覽歷史",
+                    "productId", productId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
     @PostMapping("/browse")
     @Operation(
         summary = "新增瀏覽歷史記錄",
-        description = "創建新的瀏覽歷史記錄"
+        description = "創建新的瀏覽歷史記錄（userID 從 JWT token 中自動取得，historyItem 由系統自動設定）"
     )
-    public ResponseEntity<?> createBrowseHistory(@RequestBody browseHistory history) {
+    public ResponseEntity<?> createBrowseHistory(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CreateBrowseHistoryRequest request) {
         try {
+            // 從 JWT token 中提取 userID
+            String token = authHeader.replace("Bearer ", "");
+            String userID = jwtUtil.extractUsername(token);
+
+            // 建立歷史記錄
+            browseHistory history = new browseHistory(userID, request.getProductID());
+
+            // 查詢產品並設定 historyItem
+            try {
+                com.ntou.auctionSite.model.product.Product product = productService.getProductById(request.getProductID());
+                if (product != null) {
+                    HistoryItem item = new HistoryItem(
+                        request.getProductID(),
+                        product.getSellerID(),
+                        product.getProductName(),
+                        product.getProductCategory(),
+                        product.getProductPrice(),
+                        1,
+                        product.getProductPrice()
+                    );
+                    history.setHistoryItem(item);
+                }
+            } catch (Exception e) {
+                // 產品不存在或查詢失敗，historyItem 保持為 null
+            }
+
             browseHistory saved = historyService.saveBrowseHistory(history);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -232,11 +353,19 @@ public class HistoryController {
         try {
             List<purchaseHistory> histories = historyService.getPurchaseHistoriesByUserId(userId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到使用者 " + userId + " 的購買歷史");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到使用者的購買歷史",
+                    "userId", userId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -258,25 +387,72 @@ public class HistoryController {
         try {
             List<purchaseHistory> histories = historyService.getPurchaseHistoriesByProductId(productId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到商品 " + productId + " 的購買歷史");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到商品的購買歷史",
+                    "productId", productId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
     @PostMapping("/purchase")
     @Operation(
         summary = "新增購買歷史記錄",
-        description = "創建新的購買歷史記錄"
+        description = "創建新的購買歷史記錄（userID 從 JWT token 中自動取得，historyItems 由系統自動設定）"
     )
-    public ResponseEntity<?> createPurchaseHistory(@RequestBody purchaseHistory history) {
+    public ResponseEntity<?> createPurchaseHistory(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CreatePurchaseHistoryRequest request) {
         try {
+            // 從 JWT token 中提取 userID
+            String token = authHeader.replace("Bearer ", "");
+            String userID = jwtUtil.extractUsername(token);
+
+            // 建立歷史記錄
+            purchaseHistory history = new purchaseHistory(userID, request.getProductID(), request.getProductQuantity());
+
+            // 查詢所有產品並設定 historyItems
+            java.util.ArrayList<HistoryItem> items = new java.util.ArrayList<>();
+            try {
+                for (String productId : request.getProductID()) {
+                    com.ntou.auctionSite.model.product.Product product = productService.getProductById(productId);
+                    if (product != null) {
+                        HistoryItem item = new HistoryItem(
+                            productId,
+                            product.getSellerID(),
+                            product.getProductName(),
+                            product.getProductCategory(),
+                            product.getProductPrice(),
+                            request.getProductQuantity(),
+                            product.getProductPrice() * request.getProductQuantity()
+                        );
+                        items.add(item);
+                    }
+                }
+            } catch (Exception e) {
+                // 產品不存在或查詢失敗，繼續處理
+            }
+
+            if (!items.isEmpty()) {
+                history.setHistoryItems(items);
+            }
+
             purchaseHistory saved = historyService.savePurchaseHistory(history);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -300,11 +476,19 @@ public class HistoryController {
         try {
             List<reviewHistory> histories = historyService.getReviewHistoriesByUserId(userId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到使用者 " + userId + " 的評論歷史");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到使用者的評論歷史",
+                    "userId", userId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -326,25 +510,45 @@ public class HistoryController {
         try {
             List<reviewHistory> histories = historyService.getReviewHistoriesByReviewId(reviewId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到評論 " + reviewId + " 的歷史記錄");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到評論的歷史記錄",
+                    "reviewId", reviewId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
     @PostMapping("/review")
     @Operation(
         summary = "新增評論歷史記錄",
-        description = "創建新的評論歷史記錄"
+        description = "創建新的評論歷史記錄（userID 從 JWT token 中自動取得）"
     )
-    public ResponseEntity<?> createReviewHistory(@RequestBody reviewHistory history) {
+    public ResponseEntity<?> createReviewHistory(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CreateReviewHistoryRequest request) {
         try {
+            // 從 JWT token 中提取 userID
+            String token = authHeader.replace("Bearer ", "");
+            String userID = jwtUtil.extractUsername(token);
+
+            // 建立歷史記錄
+            reviewHistory history = new reviewHistory(userID, request.getReviewID(), request.getActionType());
             reviewHistory saved = historyService.saveReviewHistory(history);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -368,11 +572,19 @@ public class HistoryController {
         try {
             List<History> histories = historyService.searchAllHistoriesByProductId(productId);
             if (histories.isEmpty()) {
-                return ResponseEntity.status(404).body("找不到商品 " + productId + " 的相關歷史記錄");
+                return ResponseEntity.status(404).body(java.util.Map.of(
+                    "status", 404,
+                    "message", "找不到該商品的相關歷史記錄",
+                    "productId", productId
+                ));
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("伺服器錯誤: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "status", 500,
+                "message", "伺服器錯誤",
+                "error", e.getMessage()
+            ));
         }
     }
 }

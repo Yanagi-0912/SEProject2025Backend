@@ -1,5 +1,7 @@
 package com.ntou.auctionSite.model.history;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 public class bidHistory extends History{
@@ -9,10 +11,18 @@ public class bidHistory extends History{
     final private int bidAmount;
     @Getter
     final private String ProductID;
-    public bidHistory(String userID, String productID, int bidAmount) {
+
+    @JsonCreator
+    public bidHistory(
+            @JsonProperty("userID") String userID,
+            @JsonProperty("productID") String productID,
+            @JsonProperty("bidAmount") int bidAmount) {
         super(userID);
         this.ProductID = productID;
-        this.historyItem = new HistoryItem(productID, 1);
         this.bidAmount = bidAmount;
+    }
+
+    public void setHistoryItem(HistoryItem historyItem) {
+        this.historyItem = historyItem;
     }
 }
