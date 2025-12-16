@@ -8,20 +8,18 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "messages")
-@Schema(description = "聊天訊息")
-public class Message {
+@Document(collection = "chat_rooms")
+@Schema(description = "聊天室實體（用於管理用戶間的對話關係）")
+public class ChatRoom {
     @Id
-    @Schema(description = "訊息唯一識別碼", example = "507f1f77bcf86cd799439011")
+    @Schema(description = "聊天室唯一識別碼（MongoDB 自動生成）", example = "507f1f77bcf86cd799439011")
     private String id;
 
-    @Schema(description = "聊天室識別碼", example = "1_2")
+    @Schema(description = "聊天室代號（格式：senderId_recipientId）", example = "1_2")
     private String chatId;
 
     @Schema(description = "發送者用戶 ID", example = "1")
@@ -29,10 +27,5 @@ public class Message {
 
     @Schema(description = "接收者用戶 ID", example = "2")
     private Long recipientId;
-
-    @Schema(description = "訊息內容", example = "你好，這個商品還有庫存嗎？")
-    private String content;
-
-    @Schema(description = "發送時間", example = "2025-12-16T10:30:00")
-    private LocalDateTime timestamp;
 }
+

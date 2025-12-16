@@ -5,24 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "messages")
-@Schema(description = "聊天訊息")
-public class Message {
-    @Id
-    @Schema(description = "訊息唯一識別碼", example = "507f1f77bcf86cd799439011")
+@Schema(description = "聊天即時通知（透過 WebSocket 推送）")
+public class ChatNotification {
+    @Schema(description = "訊息 ID", example = "507f1f77bcf86cd799439011")
     private String id;
-
-    @Schema(description = "聊天室識別碼", example = "1_2")
-    private String chatId;
 
     @Schema(description = "發送者用戶 ID", example = "1")
     private Long senderId;
@@ -32,7 +23,5 @@ public class Message {
 
     @Schema(description = "訊息內容", example = "你好，這個商品還有庫存嗎？")
     private String content;
-
-    @Schema(description = "發送時間", example = "2025-12-16T10:30:00")
-    private LocalDateTime timestamp;
 }
+
