@@ -46,6 +46,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/history/**").permitAll()   // 允許所有人查詢歷史記錄
                     .requestMatchers(HttpMethod.POST, "/api/history/**").authenticated() // POST 歷史記錄需要認證
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // 允許訪問 Swagger UI
+                    .requestMatchers("/ws/**").permitAll() // 允許 WebSocket 連線
                     .anyRequest().authenticated();                                             // 其他請求需要認證
                     }
             )
