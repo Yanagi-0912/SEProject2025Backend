@@ -1,3 +1,9 @@
 spring:
   profiles:
     active: dev
+# Github image CDN
+github:
+  token: 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
+  owner: Yanagi-0912
+  repo: SEProject2025imageCDN
+  branch: main

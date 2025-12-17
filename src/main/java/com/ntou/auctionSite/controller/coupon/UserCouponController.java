@@ -194,32 +194,6 @@ public class UserCouponController {
 
     }
 
-    // 強制設為已使用
-    @PostMapping("/markUsed")
-    @Operation(summary = "強制將優惠券設為已使用")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "成功標記已使用"),
-            @ApiResponse(responseCode = "400", description = "無法標記使用"),
-            @ApiResponse(responseCode = "403", description = "不可修改其他使用者的優惠券")
-    })
-    public ResponseEntity<?> markCouponUsed(
-            @RequestParam String userCouponId,
-            @RequestParam String orderId,
-            Authentication authentication) {
-        try {
-            String username= authentication.getName(); // 或用 userService 查出完整 User
-            String currentUserId = userService.getUserInfo(username).id();
-            UserCoupon uc = userCouponService.markCouponUsed(currentUserId,userCouponId, orderId);
-            return ResponseEntity.ok(uc);
-        }
-        catch (SecurityException e){
-            return ResponseEntity.status(403).body("Apply coupon failed: " + e.getMessage());
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(400).body("Mark coupon used failed: " + e.getMessage());
-        }
-    }
-
     //刪除使用者優惠券
     @DeleteMapping("/{userCouponId}")
     @Operation(summary = "刪除使用者優惠券")

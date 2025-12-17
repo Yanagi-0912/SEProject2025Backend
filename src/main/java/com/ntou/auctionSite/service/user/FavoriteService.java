@@ -1,9 +1,6 @@
 package com.ntou.auctionSite.service.user;
 
-import com.ntou.auctionSite.dto.user.FavoriteItemDTO;
-import com.ntou.auctionSite.dto.user.FavoriteResponseDTO;
-import com.ntou.auctionSite.dto.user.SimpleFavoriteItemDTO;
-import com.ntou.auctionSite.dto.user.SimpleFavoriteResponseDTO;
+import com.ntou.auctionSite.dto.user.*;
 import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.model.user.Favorite;
 import com.ntou.auctionSite.model.user.User;
@@ -224,6 +221,7 @@ public class FavoriteService {
         // 使用者不存在
         throw new RuntimeException("使用者不存在: " + userId);
     }
+
 }
 
 

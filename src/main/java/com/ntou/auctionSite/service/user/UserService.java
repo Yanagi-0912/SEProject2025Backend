@@ -47,7 +47,8 @@ public class UserService {
                 user.getAverageRating() != null ? user.getAverageRating() : 0.0f,
                 user.getRatingCount() != null ? user.getRatingCount() : 0,
                 user.getIsBanned() != null ? user.getIsBanned() : false,
-                sellingProducts
+                sellingProducts,
+                user.getRemainingDrawTimes()
         );
     }
 
@@ -93,6 +94,10 @@ public class UserService {
             user.setPhoneNumber(request.phoneNumber());
         }
 
+        if (request.remainingDrawTimes() != null) {
+            user.setRemainingDrawTimes(request.remainingDrawTimes());
+        }
+
         user = userRepository.save(user);
 
         // 取得該使用者正在販售的商品
@@ -108,7 +113,8 @@ public class UserService {
                 user.getAverageRating() != null ? user.getAverageRating() : 0.0f,
                 user.getRatingCount() != null ? user.getRatingCount() : 0,
                 user.getIsBanned() != null ? user.getIsBanned() : false,
-                sellingProducts
+                sellingProducts,
+                user.getRemainingDrawTimes()
         );
     }
 
@@ -158,4 +164,10 @@ public class UserService {
         );
     }
 
+    public void updateRemainingDrawTimes(String username, int remainingDrawTimes) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("使用者不存在"));
+        user.setRemainingDrawTimes(remainingDrawTimes);
+        userRepository.save(user);
+    }
 }

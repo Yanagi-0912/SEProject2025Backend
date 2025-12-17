@@ -170,11 +170,11 @@ public class ProductService {
         }
         repository.delete(product);
     }
-    private void updateProductStatus(Product product) {//庫存=0時設為INACTIVE
+    private void updateProductStatus(Product product) {//庫存=0時設為SOLD
         if (product.getProductStock() == 0) {
-            product.setProductStatus(Product.ProductStatuses.INACTIVE);
+            product.setProductStatus(Product.ProductStatuses.SOLD);
         }
-        else if (product.getProductStatus() == Product.ProductStatuses.INACTIVE) {
+        else if (product.getProductStatus() == Product.ProductStatuses.SOLD) {
             // 如果之前因為庫存為0被設為 INACTIVE，現在有庫存就恢復 ACTIVE
             product.setProductStatus(Product.ProductStatuses.ACTIVE);
         }
