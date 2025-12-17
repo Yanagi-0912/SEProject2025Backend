@@ -40,6 +40,7 @@ public class SecurityConfig {
             .authorizeHttpRequests( auth -> { auth
                     .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()  // 允許所有人訪問商品列表和詳情
                     .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll()       // 允許訪問使用者公開資訊（含聊天功能）
+                    .requestMatchers(HttpMethod.POST, "/api/upload/**").permitAll() // allow uploads without auth
                     .requestMatchers("/api/products/**").authenticated()              // 其他商品相關請求需要認證
                     .requestMatchers("/api/auth/**").permitAll()                      // 允許所有人訪問認證相關的端點
                     .requestMatchers("/api/search", "/api/blursearch").permitAll()    // 允許所有人訪問搜尋端點
