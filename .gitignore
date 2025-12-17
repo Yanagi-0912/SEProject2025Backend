@@ -64,3 +64,4 @@ src/main/resources/application.properties
 render-env-variables.txt
 
 .env
+src/main/resources/application.yml
