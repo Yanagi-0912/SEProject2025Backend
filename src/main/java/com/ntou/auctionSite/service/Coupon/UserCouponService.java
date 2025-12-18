@@ -113,24 +113,6 @@ public class UserCouponService {
         return userCouponRepository.save(uc);
     }
 
-
-    // 強制設為使用
-    public UserCoupon markCouponUsed(String userId,String userCouponId, String orderID) {
-
-        UserCoupon uc = userCouponRepository.findById(userCouponId)
-                .orElseThrow(() -> new IllegalArgumentException("User coupon not found"));
-        if(!userId.equals(uc.getUserId())){
-            throw new SecurityException("You are not authorized to use other user's coupon");
-        }
-        //uc.setUsed(true);
-        uc.setRemainingUsage(0);
-        uc.setUsedTime(LocalDateTime.now());
-        uc.setOrderID(orderID);
-
-        return userCouponRepository.save(uc);
-    }
-
-
     // 刪除使用者優惠券
     public void deleteUserCoupon(String userId,String userCouponId) {
         UserCoupon uc = userCouponRepository.findById(userCouponId)

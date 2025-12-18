@@ -38,7 +38,10 @@ public record UserInfoResponse(
         boolean isBanned,
 
         @Schema(description = "正在販售的商品列表")
-        List<Product> sellingProducts
+        List<Product> sellingProducts,
+
+        @Schema(description = "剩餘抽獎次數", example = "10")
+        int remainingDrawTimes
 ) {
 }
 

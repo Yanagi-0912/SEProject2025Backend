@@ -29,7 +29,10 @@ public record UpdateUserRequest(
 
         @Schema(description = "聯絡電話（可選）", example = "0912345678")
         @Pattern(regexp = "^[0-9]{10}$", message = "電話號碼格式錯誤，請輸入 10 位數字")
-        String phoneNumber
+        String phoneNumber,
+
+        @Schema(description = "剩餘抽獎次數（可選）", example = "10")
+        Integer remainingDrawTimes
 ) {
 }
 

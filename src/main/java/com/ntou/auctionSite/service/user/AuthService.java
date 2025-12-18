@@ -41,7 +41,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
                 .build();
-
+        user.setRemainingDrawTimes(10);
         userRepository.save(user);
 
         // 產生 JWT token

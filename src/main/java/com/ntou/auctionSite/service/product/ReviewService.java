@@ -4,8 +4,10 @@ import com.ntou.auctionSite.model.Review;
 import com.ntou.auctionSite.model.order.Order;
 import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.model.history.reviewHistory;
+import com.ntou.auctionSite.model.user.User;
 import com.ntou.auctionSite.repository.*;
 import com.ntou.auctionSite.repository.history.HistoryRepository;
+import com.ntou.auctionSite.repository.history.ReviewHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +22,14 @@ public class ReviewService {
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
-    private HistoryRepository historyRepository;
+    private ReviewHistoryRepository reviewHistoryRepository;
     private List<reviewHistory> reviewHistories = new ArrayList<>();
     @Autowired
     private ProductService productService;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private UserRepository userRepository;
     //創建評論並確保一個user只能對一個商品頻論一次
     //此外要有購買過該商品才可以評論
     public Review createReview(Review review){
@@ -63,7 +67,7 @@ public class ReviewService {
         review.setComment(review.getComment());
         reviewHistory rh=new reviewHistory(review.getUserID(), review.getReviewID(),"CREATED");
         reviewHistories.add(rh);
-        historyRepository.save(rh);
+        reviewHistoryRepository.save(rh);
         productRepository.save(product);
         return reviewRepository.save(review);
     }
@@ -101,10 +105,11 @@ public class ReviewService {
         review.setComment(content);
         review.setStarCount(starCount);
         review.setUpdatedTime(LocalDateTime.now());
+        //更新賣家平均星數
 
         reviewHistory rh = new reviewHistory(userID, review.getReviewID(), "EDIT");
         reviewHistories.add(rh);
-        historyRepository.save(rh);
+        reviewHistoryRepository.save(rh);
         productRepository.save(product);
         return reviewRepository.save(review);
     }
@@ -133,4 +138,36 @@ public class ReviewService {
     public List<reviewHistory> getAllReviewHistory(){
         return reviewHistories;
     }
+
+    public void updateSellerRating(String sellerId) {
+        // 取得賣家所有商品
+        List<Product> sellerProducts = productRepository.findBySellerID(sellerId);
+
+        if (sellerProducts.isEmpty()) return;
+
+        double totalRating = 0;
+        int totalCount = 0;
+
+        for (Product product : sellerProducts) {
+            totalRating += product.getAverageRating() * product.getReviewCount();
+            totalCount += product.getReviewCount();
+        }
+        float sellerAvgRating=0f;
+        if(totalCount>0){
+            sellerAvgRating=(float) (totalRating / totalCount);
+        }
+        else{
+            sellerAvgRating=0f;
+        }
+
+
+        // 更新賣家平均評分
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new NoSuchElementException("Seller not found with id: " + sellerId));
+        seller.setAverageRating(sellerAvgRating);
+        seller.setRatingCount(totalCount);
+
+        userRepository.save(seller);
+    }
+
 }
