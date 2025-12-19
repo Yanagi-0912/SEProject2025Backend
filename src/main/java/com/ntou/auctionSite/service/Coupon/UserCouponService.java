@@ -94,7 +94,9 @@ public class UserCouponService {
     }
 
     public UserCoupon findUserCouponById(String userCouponId){
-        UserCoupon uc = userCouponRepository.findByCouponID(userCouponId);
+        // 使用 findById 查詢 UserCoupon 的 id 欄位（不是 couponID）
+        // userCouponId 是 UserCoupon 的 id，不是 Coupon 模板的 couponID
+        UserCoupon uc = userCouponRepository.findById(userCouponId).orElse(null);
         if (uc==null){
             throw new NoSuchElementException("No coupon found Id: "+userCouponId);
         }

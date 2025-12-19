@@ -14,4 +14,7 @@ public interface OrderRepository extends MongoRepository<Order,String> {
     @Query("{ 'buyerID': ?0, 'orderStatus': ?1, 'orderItems': { $elemMatch: { 'productID': ?2 } } }")
     Optional<Order> findBuyedProduct(String buyerID,Order.OrderStatuses status, String productID);
     List<Order> findByBuyerID(String buyerID);
+    
+    // 根據 orderID 欄位查詢訂單（因為 @Id 標註在 orderID 上，但為了確保查詢正確，使用明確的查詢方法）
+    Optional<Order> findByOrderID(String orderID);
 }
