@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 import static com.ntou.auctionSite.model.coupon.CouponType.*;
 
@@ -185,6 +182,20 @@ public class OrderService {
     public Order getOrderById(String orderID){
             return orderRepository.findById(orderID)
                     .orElseThrow(() -> new NoSuchElementException("Order not found with orderID: " + orderID));
+    }
+
+    public List<Order> getOrderByBuyerId(String buyerID){//根據傳入者的ID回傳訂單
+        try{
+            List<Order> orderList=orderRepository.findByBuyerID(buyerID);
+            if(orderList.isEmpty()){
+                throw new NoSuchElementException("No order found! buyerID: "+buyerID);
+            }
+            return orderList;
+        }
+        catch(Exception e){
+            System.err.println("Error fetching orders: " + e.getMessage());
+            return Collections.emptyList();//回傳一個不可更改的空list
+        }
     }
 }
 
