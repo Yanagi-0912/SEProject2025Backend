@@ -39,7 +39,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())                          // 禁用 CSRF 保護
             .authorizeHttpRequests( auth -> { auth
                     .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()  // 允許所有人訪問商品列表和詳情
-                    .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll()       // 允許訪問使用者公開資訊（含聊天功能）
+                    .requestMatchers(HttpMethod.GET, "/api/user/me").authenticated()  // 獲取當前用戶資訊需要認證
+                    .requestMatchers(HttpMethod.PUT, "/api/user/me").authenticated()  // 更新當前用戶資訊需要認證
+                    .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/upload/**").permitAll() // allow uploads without auth
                     .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
                     .requestMatchers("/api/products/**").authenticated()              // 其他商品相關請求需要認證

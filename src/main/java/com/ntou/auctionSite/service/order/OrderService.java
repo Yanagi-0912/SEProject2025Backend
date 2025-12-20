@@ -125,7 +125,7 @@ public class OrderService {
                     order.setShippingFee(0);
                     break;
                 case BUY_ONE_GET_ONE:
-                    applyBuyOneGetOneDiscount(order);
+                    discountAmount = applyBuyOneGetOneDiscount(order); // 返回送的商品價格作為折扣
                     break;
             }
             if(totalPrice>couponTemplate.getMinPurchaseAmount()){
@@ -147,7 +147,7 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    private void applyBuyOneGetOneDiscount(Order order) {
+    private double applyBuyOneGetOneDiscount(Order order) {
         //找出價格低於500的商品
         List<OrderItem> orderItems=order.getOrderItems();
         double maxPrice=500.0;//買一送一送的的商品價格最高500
@@ -161,18 +161,21 @@ public class OrderService {
         }
         if(sendProduct!=null){
             Product product=productService.getProductById(sendProduct.getProductID());
+            // createOrder 已經扣了買的那 1 件，這裡只需要扣送的那 1 件
             if (product.getProductStock() < 1) {
                 throw new IllegalStateException(
                         "Insufficient stock for BUY_ONE_GET_ONE product: " + product.getProductID()
                 );
             }
             sendProduct.setQuantity(sendProduct.getQuantity() + 1);
-            product.setProductStock(product.getProductStock() - 1);//更新庫存
+            product.setProductStock(product.getProductStock() - 1);//更新庫存：只扣送的 1 件（買的已在 createOrder 扣了）
             if (product.getProductStock() == 0) {
                 product.setProductStatus(Product.ProductStatuses.INACTIVE);
             }
             productRepository.save(product);
-
+            
+            // 返回送的商品價格作為折扣金額
+            return sendProduct.getPrice();
         }
         else{
             throw new IllegalStateException("No suitable product for buy one get one");
@@ -180,7 +183,8 @@ public class OrderService {
     }
 
     public Order getOrderById(String orderID){
-            return orderRepository.findById(orderID)
+            // 使用 findByOrderID 明確查詢 orderID 欄位，而不是依賴 findById（可能查詢 _id）
+            return orderRepository.findByOrderID(orderID.trim())
                     .orElseThrow(() -> new NoSuchElementException("Order not found with orderID: " + orderID));
     }
 
