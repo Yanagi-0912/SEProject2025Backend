@@ -186,7 +186,9 @@ public class ProductService {
         List<Product> productList=getAllProduct();
         for(Product temp:productList){
             if(temp.getProductCategory()!=null && !temp.getProductCategory().isEmpty()){
-                categories.add(temp.getProductCategory().trim());
+                if (temp.getProductStatus() == Product.ProductStatuses.ACTIVE) {
+                    categories.add(temp.getProductCategory().trim());
+                }
             }
         }
         List<String> result = new ArrayList<>(categories);
