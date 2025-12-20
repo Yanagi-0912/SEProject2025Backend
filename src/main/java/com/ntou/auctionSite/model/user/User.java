@@ -49,8 +49,10 @@ public class User implements UserDetails { // 使用者實作 UserDetails 介面
 
     private Boolean isBanned;       //是否被封鎖
 
-    private Integer remainingDrawTimes; // 剩餘抽獎次數
-     @Override
+    @Builder.Default
+    private Integer remainingDrawTimes = 10; // 剩餘抽獎次數（預設 10 次）
+
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }

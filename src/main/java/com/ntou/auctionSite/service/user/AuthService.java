@@ -34,8 +34,8 @@ public class AuthService {
                 .userName(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
+                .remainingDrawTimes(10)  // 新使用者預設 10 次抽獎機會
                 .build();
-        user.setRemainingDrawTimes(10);
         userRepository.save(user);
 
         // 產生 JWT token
