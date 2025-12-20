@@ -43,12 +43,18 @@ public class ChatController {
      *   body: JSON.stringify({ senderId: 1, recipientId: 2, content: "你好" })
      * });
      */
+
+    /**
+     * 處理來自前端的即時聊天訊息
+     */
     @MessageMapping("/chat")
     @Operation(
             summary = "發送即時訊息（WebSocket）",
             description = "透過 WebSocket 發送即時訊息給指定用戶。此方法會自動儲存訊息並推送通知給接收者。前端需連線到 /ws 並發送到 /app/chat"
     )
-    public void processMessage(@Payload Message chatMessage) {
+    public void processMessage(
+            @Payload Message chatMessage
+    ) {
         // 1. 儲存訊息到資料庫
         Message savedMsg = chatMessageService.save(chatMessage);
 
@@ -65,6 +71,9 @@ public class ChatController {
         );
     }
 
+    /**
+     * 查詢兩個用戶之間的聊天歷史訊息
+     */
     @GetMapping("/messages/{senderId}/{recipientId}")
     @Operation(
             summary = "查詢聊天歷史",
@@ -78,7 +87,8 @@ public class ChatController {
             @Parameter(description = "發送者用戶 ID", required = true, example = "1")
             @PathVariable Long senderId,
             @Parameter(description = "接收者用戶 ID", required = true, example = "2")
-            @PathVariable Long recipientId) {
+            @PathVariable Long recipientId
+    ) {
         return ResponseEntity
                 .ok(chatMessageService.findChatMessages(senderId, recipientId));
     }
