@@ -14,11 +14,19 @@ spring:
   security:
     debug: false
 
+  servlet:
+    multipart:
+      max-file-size: 100MB          # 單個檔案最大大小
+      max-request-size: 100MB       # 單個請求最大大小
+      enabled: true
+
 server:
   port: ${PORT:8080}
   error:
     include-message: always
     include-stacktrace: never  # Don't expose stack traces in production
+  tomcat:
+    max-http-post-size: 104857600   # Tomcat 最大 POST 大小（100MB）
 
 jwt:
   secret: ${JWT_SECRET}

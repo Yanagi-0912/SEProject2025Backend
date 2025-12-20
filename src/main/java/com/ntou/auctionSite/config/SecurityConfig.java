@@ -38,6 +38,13 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 啟用 CORS
             .csrf(csrf -> csrf.disable())                                       // 禁用 CSRF 保護
             .authorizeHttpRequests(auth -> auth
+                    // ========== 系統端點 (不需要認證) ==========
+                    // 錯誤處理
+                    .requestMatchers("/error").permitAll()
+
+                    // 健康檢查
+                    .requestMatchers("/actuator/**").permitAll()
+
                     // ========== 公開端點 (不需要認證) ==========
                     // 認證相關
                     .requestMatchers("/api/auth/**").permitAll()
