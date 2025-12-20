@@ -43,6 +43,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.PUT, "/api/user/me").authenticated()  // 更新當前用戶資訊需要認證
                     .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/upload/**").permitAll() // allow uploads without auth
+                    .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
                     .requestMatchers("/api/products/**").authenticated()              // 其他商品相關請求需要認證
                     .requestMatchers("/api/auth/**").permitAll()                      // 允許所有人訪問認證相關的端點
                     .requestMatchers("/api/search", "/api/blursearch").permitAll()    // 允許所有人訪問搜尋端點

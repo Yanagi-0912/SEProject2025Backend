@@ -32,12 +32,9 @@ public class ReviewService {
     private UserRepository userRepository;
     //創建評論並確保一個user只能對一個商品頻論一次
     //此外要有購買過該商品才可以評論
-    public Review createReview(Review review){
+    public Review createReview(Review review,String username){
         review.setReviewID(null);
-        if(productService.getProductById(review.getProductID())==null){
-                throw new NoSuchElementException("Product not found with ProductID: "+review.getProductID());
-            }
-
+        int starCount= review.getStarCount();
         if (!hasBuyed(review.getUserID(), review.getProductID())) {
             throw new IllegalStateException("Only users who have purchased this product can leave a review！");
         }
@@ -45,7 +42,9 @@ public class ReviewService {
         if(!existing.isEmpty()) {
             throw new IllegalStateException("The same user has already left a review for the same product!");//translate
         }
-
+        if(starCount > 5 || starCount < 1){
+            throw new IllegalArgumentException("Star count must be between 1 and 5!");
+        }
         String reviewID;
         do {
             reviewID = "REVW" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();//先用8位就好
@@ -53,34 +52,39 @@ public class ReviewService {
         while (reviewRepository.findById(reviewID).isPresent());
         Product product=productService.getProductById(review.getProductID());
         int reviewCount=product.getReviewCount();
+        String sellerId=product.getSellerID();
         double averageRating=product.getAverageRating();
-        double newTotal = averageRating * reviewCount + review.getStarCount();
+        double newTotal = averageRating * reviewCount + starCount;
         double newAvgRating = newTotal / (reviewCount + 1);
 
         //更新商品平均星數、評論數
         product.setReviewCount(reviewCount+1);
         product.setAverageRating(newAvgRating);
+        productRepository.save(product);
+        //更新賣家平均星數
+        User seller=userRepository.findById(sellerId)
+                .orElseThrow(() -> new NoSuchElementException("Seller not found with id: " + sellerId));
+        float oldSellerTotal = seller.getAverageRating() * (seller.getRatingCount() != null ? seller.getRatingCount() : 0);
+        float newSellerTotal = oldSellerTotal + starCount;
+        seller.setRatingCount((seller.getRatingCount() != null ? seller.getRatingCount() : 0) + 1);
+        seller.setAverageRating(newSellerTotal / seller.getRatingCount());
+
+        userRepository.save(seller);
         //將評論紀錄存下
         review.setReviewID(reviewID);
+        review.setUserName(username);
         review.setCreatedTime(LocalDateTime.now());
-        review.setStarCount(review.getStarCount());
+        review.setStarCount(starCount);
         review.setComment(review.getComment());
         reviewHistory rh=new reviewHistory(review.getUserID(), review.getReviewID(),"CREATED");
         reviewHistories.add(rh);
         reviewHistoryRepository.save(rh);
-        productRepository.save(product);
         return reviewRepository.save(review);
     }
     //編輯評論:只能改內容、星星數、影像url(非強制)
     public Review editReview(String reviewID, String userID, int starCount, String content, String imgURL){
         Review review = reviewRepository.findById(reviewID)
                 .orElseThrow(() -> new NoSuchElementException("Review not found, reviewID: " + reviewID));
-
-        // Debug log
-        System.out.println("=== Edit Review Debug ===");
-        System.out.println("DB review.userID: '" + review.getUserID() + "'");
-        System.out.println("Current userID: '" + userID + "'");
-        System.out.println("Equals? " + review.getUserID().trim().equalsIgnoreCase(userID.trim()));
 
         if (!review.getUserID().trim().equalsIgnoreCase(userID.trim())) {
             throw new SecurityException("You can only edit your review!");
@@ -95,6 +99,8 @@ public class ReviewService {
         }
         Product product=productService.getProductById(review.getProductID());
         int reviewCount=product.getReviewCount();
+        int oldStar=review.getStarCount();
+        String sellerId= product.getSellerID();
         double averageRating=product.getAverageRating();
         double total=averageRating*reviewCount;
         //記得扣掉舊的星數
@@ -105,18 +111,30 @@ public class ReviewService {
         review.setComment(content);
         review.setStarCount(starCount);
         review.setUpdatedTime(LocalDateTime.now());
+        productRepository.save(product);
         //更新賣家平均星數
+        User seller=userRepository.findById(sellerId)
+                .orElseThrow(() -> new NoSuchElementException("Seller not found with id: " + sellerId));
+        float oldSellerTotal = seller.getAverageRating() * seller.getRatingCount();
+        float newSellerTotal = oldSellerTotal - oldStar + starCount;
+        seller.setAverageRating(newSellerTotal / seller.getRatingCount());
 
+        userRepository.save(seller);
         reviewHistory rh = new reviewHistory(userID, review.getReviewID(), "EDIT");
         reviewHistories.add(rh);
         reviewHistoryRepository.save(rh);
-        productRepository.save(product);
         return reviewRepository.save(review);
     }
 
     //檢查某使用者是否購買過某商品
     boolean hasBuyed(String userID,String productID){
-        return orderRepository.findBuyedProduct(userID,Order.OrderStatuses.COMPLETED,productID).isPresent();
+        List<Order> orderList=orderRepository.findBuyedProduct(userID,Order.OrderStatuses.COMPLETED,productID);
+        if(!orderList.isEmpty()){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     public List<Review> getReviewByProductId(String productID){
@@ -133,41 +151,6 @@ public class ReviewService {
             throw new NoSuchElementException("Review not found with userID: " + userID);
         }
         return reviewList;
-    }
-
-    public List<reviewHistory> getAllReviewHistory(){
-        return reviewHistories;
-    }
-
-    public void updateSellerRating(String sellerId) {
-        // 取得賣家所有商品
-        List<Product> sellerProducts = productRepository.findBySellerID(sellerId);
-
-        if (sellerProducts.isEmpty()) return;
-
-        double totalRating = 0;
-        int totalCount = 0;
-
-        for (Product product : sellerProducts) {
-            totalRating += product.getAverageRating() * product.getReviewCount();
-            totalCount += product.getReviewCount();
-        }
-        float sellerAvgRating=0f;
-        if(totalCount>0){
-            sellerAvgRating=(float) (totalRating / totalCount);
-        }
-        else{
-            sellerAvgRating=0f;
-        }
-
-
-        // 更新賣家平均評分
-        User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new NoSuchElementException("Seller not found with id: " + sellerId));
-        seller.setAverageRating(sellerAvgRating);
-        seller.setRatingCount(totalCount);
-
-        userRepository.save(seller);
     }
 
 }

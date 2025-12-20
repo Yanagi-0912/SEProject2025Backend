@@ -86,7 +86,7 @@ public class ReviewController {
             String username = authentication.getName();
             String currentUserId =userService.getUserInfo(username).id() ;//取得目前使用者的id來驗證
             review.setUserID(currentUserId);
-            Review saved = reviewService.createReview(review);
+            Review saved = reviewService.createReview(review,username);
             return ResponseEntity.status(201).body(saved);
         }
         catch (NoSuchElementException e){
@@ -323,33 +323,5 @@ public class ReviewController {
             return ResponseEntity.status(500).body(null);
         }
     }
-    @GetMapping("/history")
-    @Operation(
-            summary = "取得所有評論歷史",
-            description = "回傳系統中所有商品的評論紀錄"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "成功取得評論歷史",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = Review.class),
-                            examples = @ExampleObject(
-                                    value = "[{\n" +
-                                            "  \"productID\": \"PROD5B82D1D6\",\n" +
-                                            "  \"userID\": \"USER123\",\n" +
-                                            "  \"starCount\": 5,\n" +
-                                            "  \"comment\": \"商品非常好！\",\n" +
-                                            "  \"imgURL\": \"被評論商品的url\"\n" +
-                                            "}]"
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "500", description = "伺服器錯誤", content = @Content(mediaType = "text/plain"))
-    })
 
-    public ResponseEntity<List<?>> getAllReviewHistory(){
-        return ResponseEntity.ok(reviewService.getAllReviewHistory());
-    }
 }

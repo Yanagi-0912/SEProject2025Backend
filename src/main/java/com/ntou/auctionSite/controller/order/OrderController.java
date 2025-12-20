@@ -338,4 +338,78 @@ public class OrderController {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
+
+    @Operation(
+            summary = "依照買家ID搜尋訂單",
+            description = "查詢指定買家（buyerID）所建立的所有訂單"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "成功取得買家訂單列表",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Order.class),
+                            examples = @ExampleObject(
+                                    name = "查詢成功範例",
+                                    value = "[\n" +
+                                            "  {\n" +
+                                            "    \"orderID\": \"ORDE2003F99-1\",\n" +
+                                            "    \"buyerID\": \"692457c8cdb0278a527e86ab\",\n" +
+                                            "    \"orderType\": \"DIRECT\",\n" +
+                                            "    \"status\": \"COMPLETED\"\n" +
+                                            "  },\n" +
+                                            "  {\n" +
+                                            "    \"orderID\": \"ORDE2003F99-2\",\n" +
+                                            "    \"buyerID\": \"692457c8cdb0278a527e86ab\",\n" +
+                                            "    \"orderType\": \"AUCTION\",\n" +
+                                            "    \"status\": \"PENDING\"\n" +
+                                            "  }\n" +
+                                            "]"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "找不到該買家的訂單",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(
+                                    value = "Order not found with buyerID: 692457c8cdb0278a527e86ab"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "伺服器錯誤",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(
+                                    value = "Server error: xxx"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/buyer")
+    public ResponseEntity<?> getOrderByBuyerId(
+            @Parameter(
+                    description = "買家ID",
+                    example = "692457c8cdb0278a527e86ab",
+                    required = true
+            )
+            @RequestParam String buyerId
+    ) {
+        try {
+            return ResponseEntity.ok(orderService.getOrderByBuyerId(buyerId));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.status(404)
+                    .body("Order not found with buyerID: " + buyerId);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body("Server error: " + e.getMessage());
+        }
+    }
+
 }
