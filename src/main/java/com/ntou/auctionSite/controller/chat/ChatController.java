@@ -1,13 +1,17 @@
 package com.ntou.auctionSite.controller.chat;
 
-import com.ntou.auctionSite.model.Message;
 import com.ntou.auctionSite.model.ChatNotification;
+import com.ntou.auctionSite.model.ChatRoom; // 記得 import 這個
+import com.ntou.auctionSite.model.Message;
 import com.ntou.auctionSite.service.ChatMessageService;
+import com.ntou.auctionSite.service.ChatRoomService; // 記得 import 這個
+import com.ntou.auctionSite.dto.ChatRoom.ChatRoomDto;
+import com.ntou.auctionSite.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -17,51 +21,32 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
 @Controller
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
-@Tag(name = "聊天功能", description = "聊天室相關 API，支援 WebSocket 即時通訊和歷史訊息查詢")
+@Tag(name = "聊天功能", description = "聊天室相關 API")
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
 
-    /**
-     * 處理即時訊息傳送（完整流程）
-     *
-     * 當前端透過 WebSocket 發送訊息到 /app/chat 時，此方法會：
-     * 1. 接收訊息
-     * 2. 儲存訊息到 MongoDB
-     * 3. 即時推送通知給接收者（透過 /user/{recipientId}/queue/messages）
-     *
-     * 前端使用方式：
-     * client.publish({
-     *   destination: '/app/chat',
-     *   body: JSON.stringify({ senderId: 1, recipientId: 2, content: "你好" })
-     * });
-     */
+    // 👇 1. 必須加上這一行，讓 Spring 注入 ChatRoomService
+    private final ChatRoomService chatRoomService;
+    private final UserRepository userRepository;
 
-    /**
-     * 處理來自前端的即時聊天訊息
-     */
     @MessageMapping("/chat")
-    @Operation(
-            summary = "發送即時訊息（WebSocket）",
-            description = "透過 WebSocket 發送即時訊息給指定用戶。此方法會自動儲存訊息並推送通知給接收者。前端需連線到 /ws 並發送到 /app/chat"
-    )
-    public void processMessage(
-            @Payload Message chatMessage
-    ) {
-        // 1. 儲存訊息到資料庫
+    @Operation(summary = "發送即時訊息（WebSocket）")
+    public void processMessage(@Payload Message chatMessage) {
         Message savedMsg = chatMessageService.save(chatMessage);
 
-        // 2. 即時推送通知給接收者（如果接收者在線，會立即收到）
-        messagingTemplate.convertAndSendToUser(
-                String.valueOf(chatMessage.getRecipientId()),
-                "/queue/messages",
+        // 修正後的推播邏輯 (改用 Topic 避免權限問題)
+        messagingTemplate.convertAndSend(
+                "/topic/user/" + chatMessage.getRecipientId(),
                 new ChatNotification(
                         savedMsg.getId(),
                         savedMsg.getSenderId(),
@@ -71,26 +56,36 @@ public class ChatController {
         );
     }
 
-    /**
-     * 查詢兩個用戶之間的聊天歷史訊息
-     */
     @GetMapping("/messages/{senderId}/{recipientId}")
-    @Operation(
-            summary = "查詢聊天歷史",
-            description = "查詢兩個用戶之間的所有聊天訊息"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "成功取得聊天記錄"),
-            @ApiResponse(responseCode = "404", description = "找不到聊天記錄")
-    })
+    @Operation(summary = "查詢聊天歷史")
     public ResponseEntity<List<Message>> findChatMessages(
-            @Parameter(description = "發送者用戶 ID", required = true, example = "1")
-            @PathVariable Long senderId,
-            @Parameter(description = "接收者用戶 ID", required = true, example = "2")
-            @PathVariable Long recipientId
+            @PathVariable String senderId,
+            @PathVariable String recipientId
     ) {
         return ResponseEntity
                 .ok(chatMessageService.findChatMessages(senderId, recipientId));
     }
-}
 
+    // 👇 新增的 API
+    @GetMapping("/chat-rooms/{userId}")
+    @Operation(summary = "查詢使用者的所有聊天室列表")
+    public ResponseEntity<List<ChatRoomDto>> getUserChatRooms(@PathVariable String userId) {
+        // 先取得使用者的所有聊天室 (原始資料)
+        List<ChatRoom> rooms = chatRoomService.findUserChatRooms(userId);
+
+        // 將原始資料轉換成 DTO，並填入對方名字
+        List<ChatRoomDto> roomDtos = rooms.stream().map(room -> {
+            // 因為我們現在只查 findBySenderId，所以 Sender 是我自己，Recipient 永遠是對方
+            String otherUserId = room.getRecipientId();
+
+            // 去資料庫查對方名字 (如果查不到就顯示 "未知用戶")
+            String otherUserName = userRepository.findById(otherUserId)
+                    .map(user -> user.getUsername()) // 假設 User 物件有 getUsername()
+                    .orElse("未知用戶");
+
+            return new ChatRoomDto(room.getChatId(), otherUserId, otherUserName);
+        }).toList();
+
+        return ResponseEntity.ok(roomDtos);
+    }
+}

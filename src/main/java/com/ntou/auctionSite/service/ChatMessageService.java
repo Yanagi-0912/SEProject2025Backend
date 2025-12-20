@@ -25,7 +25,7 @@ public class ChatMessageService {
     }
 
     // 根據發送者和接收者 ID 查詢聊天訊息
-    public List<Message> findChatMessages(Long senderId, Long recipientId) {
+    public List<Message> findChatMessages(String senderId, String recipientId) {
         var chatId = chatRoomService.getChatId(senderId, recipientId, false);
         return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
     }

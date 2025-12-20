@@ -16,10 +16,10 @@ public class ChatNotification {
     private String id;
 
     @Schema(description = "發送者用戶 ID", example = "1")
-    private Long senderId;
+    private String senderId;
 
     @Schema(description = "接收者用戶 ID", example = "2")
-    private Long recipientId;
+    private String recipientId;
 
     @Schema(description = "訊息內容", example = "你好，這個商品還有庫存嗎？")
     private String content;
