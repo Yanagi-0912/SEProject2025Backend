@@ -5,6 +5,7 @@ import com.ntou.auctionSite.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class ChatMessageService {
                 .getChatId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true)
                 .orElseThrow(() -> new RuntimeException("Failed to get or create chat ID"));
         chatMessage.setChatId(chatId);
+        chatMessage.setTimestamp(LocalDateTime.now());
         repository.save(chatMessage);
         return chatMessage;
     }
