@@ -29,15 +29,33 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageService chatMessageService;
 
+    /**
+     * 處理即時訊息傳送（完整流程）
+     *
+     * 當前端透過 WebSocket 發送訊息到 /app/chat 時，此方法會：
+     * 1. 接收訊息
+     * 2. 儲存訊息到 MongoDB
+     * 3. 即時推送通知給接收者（透過 /user/{recipientId}/queue/messages）
+     *
+     * 前端使用方式：
+     * client.publish({
+     *   destination: '/app/chat',
+     *   body: JSON.stringify({ senderId: 1, recipientId: 2, content: "你好" })
+     * });
+     */
     @MessageMapping("/chat")
     @Operation(
             summary = "發送即時訊息（WebSocket）",
-            description = "透過 WebSocket 發送即時訊息給指定用戶。前端需連線到 /ws 並發送到 /app/chat"
+            description = "透過 WebSocket 發送即時訊息給指定用戶。此方法會自動儲存訊息並推送通知給接收者。前端需連線到 /ws 並發送到 /app/chat"
     )
     public void processMessage(@Payload Message chatMessage) {
+        // 1. 儲存訊息到資料庫
         Message savedMsg = chatMessageService.save(chatMessage);
+
+        // 2. 即時推送通知給接收者（如果接收者在線，會立即收到）
         messagingTemplate.convertAndSendToUser(
-                String.valueOf(chatMessage.getRecipientId()), "/queue/messages",
+                String.valueOf(chatMessage.getRecipientId()),
+                "/queue/messages",
                 new ChatNotification(
                         savedMsg.getId(),
                         savedMsg.getSenderId(),

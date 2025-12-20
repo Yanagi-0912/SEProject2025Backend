@@ -25,4 +25,3 @@ public class FavoriteResponseDTO {
     @Schema(description = "總收藏數", example = "5")
     private Integer totalItems;
 }
-

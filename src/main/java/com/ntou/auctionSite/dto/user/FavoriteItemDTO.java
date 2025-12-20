@@ -43,4 +43,3 @@ public class FavoriteItemDTO {
     @Schema(description = "加入收藏的時間", example = "2025-11-29T10:30:00")
     private LocalDateTime addedAt;
 }
-
