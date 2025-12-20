@@ -36,29 +36,55 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 啟用 CORS
-            .csrf(csrf -> csrf.disable())                          // 禁用 CSRF 保護
-            .authorizeHttpRequests( auth -> { auth
-                    .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()  // 允許所有人訪問商品列表和詳情
-                    .requestMatchers(HttpMethod.GET, "/api/user/me").authenticated()  // 獲取當前用戶資訊需要認證
-                    .requestMatchers(HttpMethod.PUT, "/api/user/me").authenticated()  // 更新當前用戶資訊需要認證
+            .csrf(csrf -> csrf.disable())                                       // 禁用 CSRF 保護
+            .authorizeHttpRequests(auth -> auth
+                    // ========== 公開端點 (不需要認證) ==========
+                    // 認證相關
+                    .requestMatchers("/api/auth/**").permitAll()
+
+                    // 文件與 API 文件
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                    // WebSocket 連線
+                    .requestMatchers("/ws/**").permitAll()
+
+                    // 商品相關 (僅查詢)
+                    .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+
+                    // 用戶相關 (僅查詢)
                     .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/upload/**").permitAll() // allow uploads without auth
+
+                    // 訂單相關 (僅查詢)
                     .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
-                    .requestMatchers("/api/products/**").authenticated()              // 其他商品相關請求需要認證
-                    .requestMatchers("/api/auth/**").permitAll()                      // 允許所有人訪問認證相關的端點
-                    .requestMatchers("/api/search", "/api/blursearch").permitAll()    // 允許所有人訪問搜尋端點
-                    .requestMatchers(HttpMethod.GET, "/api/history/**").permitAll()   // 允許所有人查詢歷史記錄
-                    .requestMatchers(HttpMethod.POST, "/api/history/**").authenticated() // POST 歷史記錄需要認證
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // 允許訪問 Swagger UI
-                    .requestMatchers("/ws/**").permitAll() // 允許 WebSocket 連線
-                    .anyRequest().authenticated();                                             // 其他請求需要認證
-                    }
+
+                    // 歷史記錄 (僅查詢)
+                    .requestMatchers(HttpMethod.GET, "/api/history/**").permitAll()
+
+                    // 搜尋功能
+                    .requestMatchers("/api/search", "/api/blursearch").permitAll()
+
+                    // 檔案上傳
+                    .requestMatchers(HttpMethod.POST, "/api/upload/**").permitAll()
+
+                    // ========== 需要認證的端點 ==========
+                    // 當前用戶資訊
+                    .requestMatchers(HttpMethod.GET, "/api/user/me").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/user/me").authenticated()
+
+                    // 商品相關 (新增、修改、刪除)
+                    .requestMatchers("/api/products/**").authenticated()
+
+                    // 歷史記錄 (新增)
+                    .requestMatchers(HttpMethod.POST, "/api/history/**").authenticated()
+
+                    // 其他所有請求
+                    .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session. // 無狀態 session
-                    sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement(session -> session
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 無狀態 session
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // 加入 JWT Filter
-                .build();
+            .build();
     }
 
     @Bean

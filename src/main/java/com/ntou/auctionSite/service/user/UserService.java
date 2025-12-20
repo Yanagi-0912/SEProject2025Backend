@@ -48,7 +48,7 @@ public class UserService {
                 user.getRatingCount() != null ? user.getRatingCount() : 0,
                 user.getIsBanned() != null ? user.getIsBanned() : false,
                 sellingProducts,
-                user.getRemainingDrawTimes()
+                user.getRemainingDrawTimes() != null ? user.getRemainingDrawTimes() : 0
         );
     }
 
@@ -114,7 +114,7 @@ public class UserService {
                 user.getRatingCount() != null ? user.getRatingCount() : 0,
                 user.getIsBanned() != null ? user.getIsBanned() : false,
                 sellingProducts,
-                user.getRemainingDrawTimes()
+                user.getRemainingDrawTimes() != null ? user.getRemainingDrawTimes() : 0
         );
     }
 

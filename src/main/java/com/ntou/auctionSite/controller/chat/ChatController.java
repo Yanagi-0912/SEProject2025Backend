@@ -1,4 +1,4 @@
-package com.ntou.auctionSite.controller;
+package com.ntou.auctionSite.controller.chat;
 
 import com.ntou.auctionSite.model.Message;
 import com.ntou.auctionSite.model.ChatNotification;

@@ -1,4 +1,4 @@
-package com.ntou.auctionSite.controller.ImageUpload;
+package com.ntou.auctionSite.controller.imageUpload;
 
 import com.ntou.auctionSite.service.GitHubUpload.GitHubUploadService;
 import io.swagger.v3.oas.annotations.Operation;
