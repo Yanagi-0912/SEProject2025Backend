@@ -42,6 +42,17 @@ public class GitHubUploadService {
     public String upload(MultipartFile file) throws Exception {
         logger.info("開始上傳圖片，檔案名稱: " + file.getOriginalFilename());
 
+        // 驗證 token 是否配置
+        if (token == null || token.isEmpty() || token.startsWith("${")) {
+            logger.severe("GitHub token 未配置或為默認值");
+            throw new IllegalStateException(
+                    "GitHub token 未配置。" +
+                    "\n請在 application-dev.yml 中配置有效的 github.token。" +
+                    "\n說明: 訪問 https://github.com/settings/tokens 生成 Personal Access Token (PAT)。" +
+                    "\n所需權限: repo 或 public_repo"
+            );
+        }
+
         // Basic validations
         if (file == null || file.isEmpty()) {
             logger.warning("上傳檔案為空");
@@ -69,6 +80,9 @@ public class GitHubUploadService {
         );
 
         logger.info("GitHub API URL: " + apiUrl);
+        logger.info("GitHub Repository: " + owner + "/" + repo);
+        logger.info("Token 長度: " + token.length() + " 字元");
+        logger.info("Token 前綴: " + token.substring(0, Math.min(20, token.length())) + "...");
 
         String contentBase64 = Base64.getEncoder()
                 .encodeToString(file.getBytes());
@@ -97,11 +111,36 @@ public class GitHubUploadService {
                     String.class
             );
             logger.info("GitHub API 上傳成功，狀態碼: " + response.getStatusCode());
+        } catch (HttpClientErrorException.Unauthorized ex) {
+            // 401: Unauthorized - token 無效或過期
+            String details = ex.getResponseBodyAsString();
+            logger.severe("GitHub API 401 Unauthorized - Token 無效或過期");
+            logger.severe("GitHub API 響應: " + details);
+            logger.severe("Token 長度: " + token.length() + " 字元");
+            logger.severe("Token 前 20 字元: " + token.substring(0, Math.min(20, token.length())) + "...");
+            throw new IllegalStateException(
+                    "GitHub token 無效或過期！\n" +
+                    "詳情: " + details + "\n\n" +
+                    "解決方案:\n" +
+                    "1. 訪問 https://github.com/settings/tokens\n" +
+                    "2. 檢查 Personal Access Token (PAT) 是否過期\n" +
+                    "3. 生成新的 token（選擇 'repo' 或 'public_repo' 權限）\n" +
+                    "4. 更新 application-dev.yml 中的 github.token\n" +
+                    "5. 重新啟動應用程式"
+            );
         } catch (HttpClientErrorException.Forbidden ex) {
             // 403: Forbidden
             String details = ex.getResponseBodyAsString();
-            logger.severe("GitHub API 403 Forbidden: " + details);
-            throw new IllegalStateException("GitHub API 403 Forbidden: " + details);
+            logger.severe("GitHub API 403 Forbidden - Token 權限不足: " + details);
+            throw new IllegalStateException(
+                    "GitHub token 權限不足！\n" +
+                    "詳情: " + details + "\n\n" +
+                    "解決方案:\n" +
+                    "1. 訪問 https://github.com/settings/tokens\n" +
+                    "2. 編輯 token，確保有 'repo' 權限\n" +
+                    "3. 更新 application-dev.yml 中的 github.token\n" +
+                    "4. 重新啟動應用程式"
+            );
         } catch (HttpClientErrorException.UnprocessableEntity ex) {
             // 422: possibly file exists and requires sha
             logger.info("GitHub API 422 檔案已存在，嘗試更新...");

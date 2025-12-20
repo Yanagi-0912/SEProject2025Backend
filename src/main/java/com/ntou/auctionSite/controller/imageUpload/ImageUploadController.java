@@ -86,11 +86,43 @@ public class ImageUploadController {
                     ));
         } catch (IllegalStateException ex) {
             logger.severe("GitHub API 錯誤: " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                            "error", ex.getMessage(),
-                            "type", "GITHUB_API_ERROR"
-                    ));
+            String errorMessage = ex.getMessage();
+
+            // 判斷是 401 還是其他錯誤
+            if (errorMessage.contains("401") || errorMessage.contains("Token 無效")) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of(
+                                "error", "GitHub token 無效或過期",
+                                "type", "GITHUB_AUTH_ERROR",
+                                "details", errorMessage,
+                                "solution", new String[]{
+                                        "訪問 https://github.com/settings/tokens",
+                                        "檢查 Personal Access Token (PAT) 是否過期",
+                                        "生成新的 token（選擇 'repo' 或 'public_repo' 權限）",
+                                        "更新 application-dev.yml 中的 github.token",
+                                        "重新啟動應用程式"
+                                }
+                        ));
+            } else if (errorMessage.contains("403") || errorMessage.contains("權限不足")) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of(
+                                "error", "GitHub token 權限不足",
+                                "type", "GITHUB_PERMISSION_ERROR",
+                                "details", errorMessage,
+                                "solution", new String[]{
+                                        "訪問 https://github.com/settings/tokens",
+                                        "編輯 token，確保有 'repo' 權限",
+                                        "更新 application-dev.yml 中的 github.token",
+                                        "重新啟動應用程式"
+                                }
+                        ));
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of(
+                                "error", errorMessage,
+                                "type", "GITHUB_API_ERROR"
+                        ));
+            }
         } catch (Exception ex) {
             logger.severe("未預期的錯誤: " + ex.getMessage());
             logger.severe("錯誤堆棧: " + ex);
