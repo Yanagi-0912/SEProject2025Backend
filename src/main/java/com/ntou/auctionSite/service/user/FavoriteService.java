@@ -7,7 +7,7 @@ import com.ntou.auctionSite.model.user.User;
 import com.ntou.auctionSite.repository.FavoriteRepository;
 import com.ntou.auctionSite.repository.ProductRepository;
 import com.ntou.auctionSite.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,16 +20,12 @@ import java.util.stream.Collectors;
  * CRUD 操作：Create（新增）、Read（查詢）、Update（更新）、Delete（刪除）
  */
 @Service
+@RequiredArgsConstructor
 public class FavoriteService {
 
-    @Autowired
-    private FavoriteRepository favoriteRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     /**
      * READ - 取得使用者收藏清單（完整資訊）

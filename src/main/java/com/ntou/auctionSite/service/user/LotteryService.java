@@ -1,13 +1,14 @@
 package com.ntou.auctionSite.service.user;
 
 import com.ntou.auctionSite.dto.user.UserInfoResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class LotteryService {
-    @Autowired
-    UserService userService;
+
+    private final UserService userService;
 
     public int reduceDrawTimes(String username) {
         UserInfoResponse userdata = userService.getUserInfo(username);

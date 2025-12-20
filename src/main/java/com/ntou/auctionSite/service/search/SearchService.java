@@ -2,7 +2,7 @@ package com.ntou.auctionSite.service.search;
 
 import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -11,9 +11,10 @@ import java.util.NoSuchElementException;
 
 //提供根據關鍵字搜尋、模糊搜尋等功能
 @Service
+@RequiredArgsConstructor
 public class SearchService {
-    @Autowired
-    private ProductRepository productRepository;
+
+    private final ProductRepository productRepository;
     public List<Product> searchByKeyword(String keyword){//精確搜尋
         try{
             List<Product> productList=productRepository.findByProductName(keyword);

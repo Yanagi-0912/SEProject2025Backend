@@ -12,7 +12,7 @@ import com.ntou.auctionSite.repository.ProductRepository;
 import com.ntou.auctionSite.service.Coupon.CouponService;
 import com.ntou.auctionSite.service.Coupon.UserCouponService;
 import com.ntou.auctionSite.service.product.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,12 +21,14 @@ import java.util.*;
 import static com.ntou.auctionSite.model.coupon.CouponType.*;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
-    @Autowired private OrderRepository orderRepository;
-    @Autowired private ProductRepository productRepository;
-    @Autowired private ProductService productService;
-    @Autowired private CouponService couponService;
-    @Autowired private UserCouponService userCouponService;
+
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final ProductService productService;
+    private final CouponService couponService;
+    private final UserCouponService userCouponService;
     //結帳功能:建立訂單、檢查與更新庫存
     public Order createOrder(Order order, String buyerID, ProductTypes types){
         Cart cart= order.getCart();

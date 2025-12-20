@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "使用者管理", description = "使用者資訊查詢與更新 API - 需要 JWT 驗證")
 @SecurityRequirement(name = "Bearer Authentication")
-public class UserController {
+public class InfoController {
 
     private final UserService userService;
 
