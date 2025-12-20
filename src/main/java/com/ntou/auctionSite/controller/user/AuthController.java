@@ -61,7 +61,9 @@ public class AuthController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(
+            @RequestBody RegisterRequest request
+    ) {
         try {
             AuthResponse response = authService.register(request);
             return ResponseEntity.ok(response);
@@ -109,7 +111,9 @@ public class AuthController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(
+            @RequestBody LoginRequest request
+    ) {
         try {
             AuthResponse response = authService.login(request);
             return ResponseEntity.ok(response);
@@ -148,7 +152,12 @@ public class AuthController {
             )
     })
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> logout(
+            @RequestHeader(
+                    value = "Authorization",
+                    required = false
+            ) String authHeader
+    ) {
         try {
             authService.logout(authHeader);
             return ResponseEntity.ok("登出成功，請刪除客戶端的 Token");

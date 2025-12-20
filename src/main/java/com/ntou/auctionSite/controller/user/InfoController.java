@@ -89,7 +89,9 @@ public class InfoController {
                     description = "使用者不存在"
             )
     })
-    public ResponseEntity<UserInfoResponse> getCurrentUser(Authentication authentication) {
+    public ResponseEntity<UserInfoResponse> getCurrentUser(
+            Authentication authentication
+    ) {
         String username = authentication.getName();
         UserInfoResponse userInfo = userService.getUserInfo(username);
         return ResponseEntity.ok(userInfo);
@@ -271,7 +273,9 @@ public class InfoController {
                     description = "使用者不存在"
             )
     })
-    public ResponseEntity<?> getUserById(@PathVariable String userId) {
+    public ResponseEntity<?> getUserById(
+            @PathVariable String userId
+    ) {
         try {
             PublicUserInfoResponse userInfo = userService.getPublicUserInfo(userId);
             return ResponseEntity.ok(userInfo);
