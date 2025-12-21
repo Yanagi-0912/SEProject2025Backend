@@ -46,3 +46,10 @@ logging:
       ntou:
         auctionSite: INFO
 
+# Github image CDN
+github:
+  token: {CDN_TOKEN}
+  owner: Yanagi-0912
+  repo: SEProject2025imageCDN
+  branch: main
+  base-path: images
