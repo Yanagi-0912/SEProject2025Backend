@@ -139,8 +139,14 @@ public class FavoriteService {
      * DELETE - 從收藏清單移除商品
      */
     public Favorite removeFromFavorites(String userId, String productId) {
-        Favorite favorite = favoriteRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("收藏清單不存在"));
+        Optional<Favorite> favoriteOpt = favoriteRepository.findByUserId(userId);
+
+        // 如果收藏清單不存在，直接返回空的 Favorite（不拋出異常）
+        if (favoriteOpt.isEmpty()) {
+            return new Favorite(userId, userId, new ArrayList<>());
+        }
+
+        Favorite favorite = favoriteOpt.get();
 
         // 移除指定商品
         favorite.getItems().removeIf(item -> item.getProductId().equals(productId));
@@ -166,8 +172,14 @@ public class FavoriteService {
      * DELETE - 清空收藏清單
      */
     public void clearFavorites(String userId) {
-        Favorite favorite = favoriteRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("收藏清單不存在"));
+        Optional<Favorite> favoriteOpt = favoriteRepository.findByUserId(userId);
+
+        // 如果收藏清單不存在，直接返回（不拋出異常）
+        if (favoriteOpt.isEmpty()) {
+            return;
+        }
+
+        Favorite favorite = favoriteOpt.get();
 
         favorite.getItems().clear();
         favoriteRepository.save(favorite);

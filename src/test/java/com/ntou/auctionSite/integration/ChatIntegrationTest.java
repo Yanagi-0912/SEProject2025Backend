@@ -37,8 +37,8 @@ class ChatIntegrationTest {
     @Autowired
     private MessageRepository messageRepository;
 
-    private static final Long SENDER_ID = 9999L;
-    private static final Long RECIPIENT_ID = 8888L;
+    private static final String SENDER_ID = "test_user_id_9999";
+    private static final String RECIPIENT_ID = "test_user_id_8888";
     private static String testChatId;
 
     @BeforeEach
@@ -240,13 +240,13 @@ class ChatIntegrationTest {
         assertTrue(chatIdOpt.isPresent());
         testChatId = chatIdOpt.get();
 
-        // 驗證格式：數字_數字
-        assertTrue(testChatId.matches("\\d+_\\d+"),
-                "chatId 應該符合 '數字_數字' 格式");
+        // 驗證格式：ID_ID
+        assertTrue(testChatId.matches("\\w+_\\w+"),
+                "chatId 應該符合 'ID_ID' 格式");
 
         // 驗證包含正確的 ID
-        assertTrue(testChatId.contains(SENDER_ID.toString())
-                || testChatId.contains(RECIPIENT_ID.toString()),
+        assertTrue(testChatId.contains(SENDER_ID)
+                || testChatId.contains(RECIPIENT_ID),
                 "chatId 應該包含用戶 ID");
 
         System.out.println("✅ 測試通過：chatId 格式正確 = " + testChatId);
