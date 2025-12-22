@@ -220,9 +220,9 @@ public class OrderController {
     })
     @PutMapping("/pay/{orderID}")
     public ResponseEntity<?> payOrder(
-            @Parameter(description = "訂單ID", example = "ORDE2003F99-2", required = true)
+            @Parameter(description = "訂單ID", example = "ORDE2003F99-2", required = false)
             @PathVariable String orderID,
-            @Parameter(description = "優惠券ID（可選）", example = "COUP7EC9E12A", required = false)
+            @Parameter(description = "優惠券ID（可選）", example = "COUP7FE2F2DE", required = false)
             @RequestParam(required = false) String couponID,
             Authentication authentication
     ){
@@ -285,7 +285,7 @@ public class OrderController {
                     responseCode = "200",
                     description = "成功取得訂單資訊",
                     content = @Content(
-                            mediaType = "text/plain",
+                            mediaType = "application/json",
                             examples = @ExampleObject(
                                     value = "Order found successfully! OrderID: ORDE2003F99-2"
                             )
