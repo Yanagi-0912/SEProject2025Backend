@@ -30,17 +30,17 @@ class ChatRoomServiceTest {
     @InjectMocks
     private ChatRoomService chatRoomService;
 
-    private Long senderId;
-    private Long recipientId;
+    private String senderId;
+    private String recipientId;
     private String expectedChatId;
     private ChatRoom mockChatRoom;
 
     @BeforeEach
     void setUp() {
         // 準備測試資料
-        senderId = 1L;
-        recipientId = 2L;
-        expectedChatId = "1_2";
+        senderId = "507f1f77bcf86cd799439011";
+        recipientId = "507f1f77bcf86cd799439012";
+        expectedChatId = "507f1f77bcf86cd799439011_507f1f77bcf86cd799439012";
 
         mockChatRoom = ChatRoom.builder()
                 .id("test-id-123")
@@ -154,17 +154,17 @@ class ChatRoomServiceTest {
         // Assert
         assertTrue(result.isPresent());
         String chatId = result.get();
-        assertTrue(chatId.matches("\\d+_\\d+"), "chatId 應該符合 數字_數字 格式");
-        assertEquals("1_2", chatId);
+        assertTrue(chatId.matches("\\w+_\\w+"), "chatId 應該符合 ID_ID 格式");
+        assertEquals(expectedChatId, chatId);
     }
 
     @Test
     @DisplayName("測試：使用不同的用戶 ID 組合")
     void getChatId_WithDifferentUserIds_ShouldWorkCorrectly() {
         // Arrange
-        Long sender = 100L;
-        Long recipient = 200L;
-        String expectedId = "100_200";
+        String sender = "507f1f77bcf86cd799439013";
+        String recipient = "507f1f77bcf86cd799439014";
+        String expectedId = "507f1f77bcf86cd799439013_507f1f77bcf86cd799439014";
 
         when(chatRoomRepository.findBySenderIdAndRecipientId(sender, recipient))
                 .thenReturn(Optional.empty());
