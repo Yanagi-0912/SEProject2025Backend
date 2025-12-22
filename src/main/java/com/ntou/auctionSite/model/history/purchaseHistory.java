@@ -10,29 +10,31 @@ public class purchaseHistory extends History{
     @Getter
     @JsonProperty("historyItems")
     private ArrayList<HistoryItem> historyItems = new ArrayList<>();
+
     @Getter
-    @JsonProperty("ProductQuantity")
-    final private int ProductQuantity;
+    @JsonProperty("productQuantity")
+    private final int productQuantity;
+
     @Getter
-    @JsonProperty("ProductID")
-    final private ArrayList<String> ProductID = new ArrayList<>();
+    @JsonProperty("productID")
+    private final ArrayList<String> productID = new ArrayList<>();
 
     // 無參數建構子（供 Jackson 和 Spring Data MongoDB 使用）
     public purchaseHistory() {
         super();
-        this.ProductQuantity = 0;
+        this.productQuantity = 0;
     }
 
     // 用於 POST 建立（自動產生 historyID）
     public purchaseHistory(
             String userID,
-            ArrayList<String> ProductID,
+            ArrayList<String> productID,
             int productQuantity) {
         super(userID);
-        if (ProductID != null) {
-            this.ProductID.addAll(ProductID);
+        if (productID != null) {
+            this.productID.addAll(productID);
         }
-        this.ProductQuantity = productQuantity;
+        this.productQuantity = productQuantity;
     }
 
     // 用於從 MongoDB 讀取
@@ -41,14 +43,14 @@ public class purchaseHistory extends History{
             @JsonProperty(value = "_id") String historyID,
             @JsonProperty("userID") String userID,
             @JsonProperty("timeStamp") java.time.LocalDateTime timeStamp,
-            @JsonProperty("ProductID") ArrayList<String> ProductID,
-            @JsonProperty(value = "ProductQuantity") @JsonAlias({"productQuantity"}) int productQuantity,
+            @JsonProperty("productID") @JsonAlias({"ProductID"}) ArrayList<String> productID,
+            @JsonProperty("productQuantity") @JsonAlias({"ProductQuantity"}) int productQuantity,
             @JsonProperty(value = "historyItems", required = false) ArrayList<HistoryItem> historyItems) {
         super(historyID, userID, timeStamp);
-        if (ProductID != null) {
-            this.ProductID.addAll(ProductID);
+        if (productID != null) {
+            this.productID.addAll(productID);
         }
-        this.ProductQuantity = productQuantity;
+        this.productQuantity = productQuantity;
         if (historyItems != null) {
             this.historyItems.addAll(historyItems);
         }

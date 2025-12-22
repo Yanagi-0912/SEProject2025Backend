@@ -2,6 +2,8 @@ package com.ntou.auctionSite.controller.history;
 
 import com.ntou.auctionSite.dto.history.*;
 import com.ntou.auctionSite.model.history.*;
+import com.ntou.auctionSite.model.user.User;
+import com.ntou.auctionSite.repository.UserRepository;
 import com.ntou.auctionSite.service.history.HistoryService;
 import com.ntou.auctionSite.utils.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +29,9 @@ public class HistoryController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private com.ntou.auctionSite.service.product.ProductService productService;
@@ -129,10 +134,12 @@ public class HistoryController {
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
+            e.printStackTrace(); // 打印完整堆栈跟踪
             return ResponseEntity.status(500).body(java.util.Map.of(
                 "status", 500,
                 "message", "伺服器錯誤",
-                "error", e.getMessage()
+                "error", e.getMessage(),
+                "errorType", e.getClass().getSimpleName()
             ));
         }
     }
@@ -180,9 +187,12 @@ public class HistoryController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CreateBidHistoryRequest request) {
         try {
-            // 從 JWT token 中提取 userID
+            // 從 JWT token 中提取 username，然後查詢 userID
             String token = authHeader.replace("Bearer ", "");
-            String userID = jwtUtil.extractUsername(token);
+            String username = jwtUtil.extractUsername(token);
+            User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("使用者不存在"));
+            String userID = user.getId();
 
             // 建立歷史記錄
             bidHistory history = new bidHistory(userID, request.getProductID(), request.getBidAmount());
@@ -245,10 +255,12 @@ public class HistoryController {
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
+            e.printStackTrace(); // 打印完整堆栈跟踪
             return ResponseEntity.status(500).body(java.util.Map.of(
                 "status", 500,
                 "message", "伺服器錯誤",
-                "error", e.getMessage()
+                "error", e.getMessage(),
+                "errorType", e.getClass().getSimpleName()
             ));
         }
     }
@@ -296,9 +308,12 @@ public class HistoryController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CreateBrowseHistoryRequest request) {
         try {
-            // 從 JWT token 中提取 userID
+            // 從 JWT token 中提取 username，然後查詢 userID
             String token = authHeader.replace("Bearer ", "");
-            String userID = jwtUtil.extractUsername(token);
+            String username = jwtUtil.extractUsername(token);
+            User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("使用者不存在"));
+            String userID = user.getId();
 
             // 建立歷史記錄
             browseHistory history = new browseHistory(userID, request.getProductID());
@@ -361,10 +376,12 @@ public class HistoryController {
             }
             return ResponseEntity.ok(histories);
         } catch (Exception e) {
+            e.printStackTrace(); // 打印完整堆栈跟踪
             return ResponseEntity.status(500).body(java.util.Map.of(
                 "status", 500,
                 "message", "伺服器錯誤",
-                "error", e.getMessage()
+                "error", e.getMessage(),
+                "errorType", e.getClass().getSimpleName()
             ));
         }
     }
@@ -412,9 +429,12 @@ public class HistoryController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CreatePurchaseHistoryRequest request) {
         try {
-            // 從 JWT token 中提取 userID
+            // 從 JWT token 中提取 username，然後查詢 userID
             String token = authHeader.replace("Bearer ", "");
-            String userID = jwtUtil.extractUsername(token);
+            String username = jwtUtil.extractUsername(token);
+            User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("使用者不存在"));
+            String userID = user.getId();
 
             // 建立歷史記錄
             purchaseHistory history = new purchaseHistory(userID, request.getProductID(), request.getProductQuantity());
@@ -535,9 +555,12 @@ public class HistoryController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CreateReviewHistoryRequest request) {
         try {
-            // 從 JWT token 中提取 userID
+            // 從 JWT token 中提取 username，然後查詢 userID
             String token = authHeader.replace("Bearer ", "");
-            String userID = jwtUtil.extractUsername(token);
+            String username = jwtUtil.extractUsername(token);
+            User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("使用者不存在"));
+            String userID = user.getId();
 
             // 建立歷史記錄
             reviewHistory history = new reviewHistory(userID, request.getReviewID(), request.getActionType());

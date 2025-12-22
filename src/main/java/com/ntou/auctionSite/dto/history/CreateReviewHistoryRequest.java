@@ -1,7 +1,12 @@
 package com.ntou.auctionSite.dto.history;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CreateReviewHistoryRequest {
+    @JsonProperty("reviewID")
     private String reviewID;
+
+    @JsonProperty("actionType")
     private String actionType;
 
     public String getReviewID() {

@@ -10,9 +10,9 @@ import java.util.List;
 public interface BrowseHistoryRepository extends HistoryRepository<browseHistory> {
     // 繼承自父介面的 findByUserID 方法會自動回傳 List<browseHistory>
 
-    @Query("{ 'ProductID': ?0 }")
+    @Query("{ 'productID': ?0 }")
     List<browseHistory> findByProductID(String productId);
 
-    @Query("{ 'userID': ?0, 'ProductID': ?1 }")
+    @Query("{ 'userID': ?0, 'productID': ?1 }")
     List<browseHistory> findByUserIDAndProductID(String userId, String productId);
 }

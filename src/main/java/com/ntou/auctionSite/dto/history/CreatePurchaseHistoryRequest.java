@@ -1,17 +1,21 @@
 package com.ntou.auctionSite.dto.history;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 
 public class CreatePurchaseHistoryRequest {
-    private ArrayList<String> ProductID;
+    @JsonProperty("productID")
+    private ArrayList<String> productID;
+
+    @JsonProperty("productQuantity")
     private int productQuantity;
 
     public ArrayList<String> getProductID() {
-        return ProductID;
+        return productID;
     }
 
-    public void setProductID(ArrayList<String> ProductID) {
-        this.ProductID = ProductID;
+    public void setProductID(ArrayList<String> productID) {
+        this.productID = productID;
     }
 
     public int getProductQuantity() {

@@ -9,17 +9,19 @@ public class bidHistory extends History{
     @Getter
     @JsonProperty("historyItem")
     private HistoryItem historyItem = null;
+
     @Getter
     @JsonProperty("bidAmount")
-    final private int bidAmount;
+    private final int bidAmount;
+
     @Getter
-    @JsonProperty("ProductID")
-    final private String ProductID;
+    @JsonProperty("productID")
+    private final String productID;
 
     // 無參數建構子（供 Jackson 和 Spring Data MongoDB 使用）
     public bidHistory() {
         super();
-        this.ProductID = null;
+        this.productID = null;
         this.bidAmount = 0;
     }
 
@@ -29,7 +31,7 @@ public class bidHistory extends History{
             String productID,
             int bidAmount) {
         super(userID);
-        this.ProductID = productID;
+        this.productID = productID;
         this.bidAmount = bidAmount;
     }
 
@@ -39,11 +41,11 @@ public class bidHistory extends History{
             @JsonProperty(value = "_id") String historyID,
             @JsonProperty("userID") String userID,
             @JsonProperty("timeStamp") java.time.LocalDateTime timeStamp,
-            @JsonProperty("ProductID") @JsonAlias({"productID"}) String productID,
+            @JsonProperty("productID") @JsonAlias({"ProductID"}) String productID,
             @JsonProperty("bidAmount") int bidAmount,
             @JsonProperty(value = "historyItem", required = false) HistoryItem historyItem) {
         super(historyID, userID, timeStamp);
-        this.ProductID = productID;
+        this.productID = productID;
         this.bidAmount = bidAmount;
         this.historyItem = historyItem;
     }

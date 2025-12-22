@@ -11,7 +11,7 @@ public interface PurchaseHistoryRepository extends HistoryRepository<purchaseHis
     // 繼承自父介面的 findByUserID 方法會自動回傳 List<purchaseHistory>
 
     // 搜尋包含特定商品 ID 的購買紀錄（購買歷史可能包含多個商品）
-    @Query("{ 'ProductID': ?0 }")
+    @Query("{ 'productID': { $in: [?0] } }")
     List<purchaseHistory> findByProductIDContaining(String productId);
 }
 

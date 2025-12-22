@@ -9,20 +9,21 @@ public class browseHistory extends History{
     @Getter
     @JsonProperty("historyItem")
     private HistoryItem historyItem = null;
+
     @Getter
-    @JsonProperty("ProductID")
-    final private String ProductID;
+    @JsonProperty("productID")
+    private final String productID;
 
     // 無參數建構子（供 Jackson 和 Spring Data MongoDB 使用）
     public browseHistory() {
         super();
-        this.ProductID = null;
+        this.productID = null;
     }
 
     // 用於 POST 建立（自動產生 historyID）
     public browseHistory(String userID, String productID) {
         super(userID);
-        this.ProductID = productID;
+        this.productID = productID;
     }
 
     // 用於從 MongoDB 讀取
@@ -31,10 +32,10 @@ public class browseHistory extends History{
             @JsonProperty(value = "_id") String historyID,
             @JsonProperty("userID") String userID,
             @JsonProperty("timeStamp") java.time.LocalDateTime timeStamp,
-            @JsonProperty("ProductID") @JsonAlias({"productID"}) String productID,
+            @JsonProperty("productID") @JsonAlias({"ProductID"}) String productID,
             @JsonProperty(value = "historyItem", required = false) HistoryItem historyItem) {
         super(historyID, userID, timeStamp);
-        this.ProductID = productID;
+        this.productID = productID;
         this.historyItem = historyItem;
     }
 
