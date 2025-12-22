@@ -81,7 +81,7 @@ public class ProductService {
     }
 
     public List<Product> getProductsByPage(int page, int pageSize) {
-        List<Product> allProducts = getAllProduct();
+        List<Product> allProducts = getAllProductSorted("createdTime","desc");
         int total = allProducts.size();
         int fromIndex = (page - 1) * pageSize;
         if (fromIndex >= total) {
