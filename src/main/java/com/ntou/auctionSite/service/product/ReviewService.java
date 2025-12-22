@@ -64,10 +64,15 @@ public class ReviewService {
         //更新賣家平均星數
         User seller=userRepository.findById(sellerId)
                 .orElseThrow(() -> new NoSuchElementException("Seller not found with id: " + sellerId));
-        float oldSellerTotal = seller.getAverageRating() * (seller.getRatingCount() != null ? seller.getRatingCount() : 0);
-        float newSellerTotal = oldSellerTotal + starCount;
-        seller.setRatingCount((seller.getRatingCount() != null ? seller.getRatingCount() : 0) + 1);
-        seller.setAverageRating(newSellerTotal / seller.getRatingCount());
+        Float sellerAvg=seller.getAverageRating();
+        Integer sellerCount=seller.getRatingCount();
+
+        int count = (sellerCount == null) ? 0 : sellerCount;
+        float avg = (sellerAvg == null) ? 0.0f : sellerAvg;
+        float newSellerTotal=avg*count+starCount;
+        int newCount=count+1;
+        seller.setRatingCount(newCount);
+        seller.setAverageRating(newSellerTotal / newCount);
 
         userRepository.save(seller);
         //將評論紀錄存下
