@@ -42,11 +42,11 @@ class ChatMessageServiceTest {
 
     @BeforeEach
     void setUp() {
-        chatId = "1_2";
+        chatId = "507f1f77bcf86cd799439011_507f1f77bcf86cd799439012";
 
         testMessage = Message.builder()
-                .senderId(1L)
-                .recipientId(2L)
+                .senderId("507f1f77bcf86cd799439011")
+                .recipientId("507f1f77bcf86cd799439012")
                 .content("你好，這個商品還有庫存嗎？")
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -56,7 +56,7 @@ class ChatMessageServiceTest {
     @DisplayName("測試：儲存訊息時應該設定正確的 chatId")
     void save_ShouldSetCorrectChatId() {
         // Arrange
-        when(chatRoomService.getChatId(1L, 2L, true))
+        when(chatRoomService.getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", true))
                 .thenReturn(Optional.of(chatId));
         when(messageRepository.save(any(Message.class)))
                 .thenAnswer(invocation -> {
@@ -73,7 +73,7 @@ class ChatMessageServiceTest {
         assertEquals(chatId, savedMessage.getChatId(), "chatId 應該被正確設定");
         assertEquals("msg-123", savedMessage.getId(), "訊息 ID 應該被設定");
 
-        verify(chatRoomService, times(1)).getChatId(1L, 2L, true);
+        verify(chatRoomService, times(1)).getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", true);
         verify(messageRepository, times(1)).save(any(Message.class));
     }
 
@@ -81,7 +81,7 @@ class ChatMessageServiceTest {
     @DisplayName("測試：儲存訊息時，如果取得 chatId 失敗應該拋出例外")
     void save_WhenGetChatIdFails_ShouldThrowException() {
         // Arrange
-        when(chatRoomService.getChatId(1L, 2L, true))
+        when(chatRoomService.getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", true))
                 .thenReturn(Optional.empty());
 
         // Act & Assert
@@ -100,28 +100,28 @@ class ChatMessageServiceTest {
                 Message.builder()
                         .id("msg1")
                         .chatId(chatId)
-                        .senderId(1L)
-                        .recipientId(2L)
+                        .senderId("507f1f77bcf86cd799439011")
+                        .recipientId("507f1f77bcf86cd799439012")
                         .content("訊息1")
                         .timestamp(LocalDateTime.now().minusMinutes(5))
                         .build(),
                 Message.builder()
                         .id("msg2")
                         .chatId(chatId)
-                        .senderId(2L)
-                        .recipientId(1L)
+                        .senderId("507f1f77bcf86cd799439012")
+                        .recipientId("507f1f77bcf86cd799439011")
                         .content("訊息2")
                         .timestamp(LocalDateTime.now())
                         .build()
         );
 
-        when(chatRoomService.getChatId(1L, 2L, false))
+        when(chatRoomService.getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", false))
                 .thenReturn(Optional.of(chatId));
         when(messageRepository.findByChatId(chatId))
                 .thenReturn(expectedMessages);
 
         // Act
-        List<Message> result = chatMessageService.findChatMessages(1L, 2L);
+        List<Message> result = chatMessageService.findChatMessages("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012");
 
         // Assert
         assertNotNull(result, "結果不應為 null");
@@ -129,7 +129,7 @@ class ChatMessageServiceTest {
         assertEquals("msg1", result.get(0).getId());
         assertEquals("msg2", result.get(1).getId());
 
-        verify(chatRoomService, times(1)).getChatId(1L, 2L, false);
+        verify(chatRoomService, times(1)).getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", false);
         verify(messageRepository, times(1)).findByChatId(chatId);
     }
 
@@ -137,17 +137,17 @@ class ChatMessageServiceTest {
     @DisplayName("測試：查詢聊天訊息，聊天室不存在時應該返回空列表")
     void findChatMessages_WhenChatRoomNotExists_ShouldReturnEmptyList() {
         // Arrange
-        when(chatRoomService.getChatId(1L, 2L, false))
+        when(chatRoomService.getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", false))
                 .thenReturn(Optional.empty());
 
         // Act
-        List<Message> result = chatMessageService.findChatMessages(1L, 2L);
+        List<Message> result = chatMessageService.findChatMessages("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012");
 
         // Assert
         assertNotNull(result, "結果不應為 null");
         assertTrue(result.isEmpty(), "應該返回空列表");
 
-        verify(chatRoomService, times(1)).getChatId(1L, 2L, false);
+        verify(chatRoomService, times(1)).getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", false);
         verify(messageRepository, never()).findByChatId(anyString());
     }
 
@@ -156,8 +156,8 @@ class ChatMessageServiceTest {
     void save_ShouldPreserveMessageContent() {
         // Arrange
         String originalContent = "測試訊息內容";
-        Long originalSenderId = 1L;
-        Long originalRecipientId = 2L;
+        String originalSenderId = "507f1f77bcf86cd799439011";
+        String originalRecipientId = "507f1f77bcf86cd799439012";
 
         testMessage.setContent(originalContent);
         testMessage.setSenderId(originalSenderId);
@@ -181,13 +181,13 @@ class ChatMessageServiceTest {
     @DisplayName("測試：查詢空的聊天記錄")
     void findChatMessages_WhenNoMessages_ShouldReturnEmptyList() {
         // Arrange
-        when(chatRoomService.getChatId(1L, 2L, false))
+        when(chatRoomService.getChatId("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012", false))
                 .thenReturn(Optional.of(chatId));
         when(messageRepository.findByChatId(chatId))
                 .thenReturn(new ArrayList<>());
 
         // Act
-        List<Message> result = chatMessageService.findChatMessages(1L, 2L);
+        List<Message> result = chatMessageService.findChatMessages("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012");
 
         // Assert
         assertNotNull(result);

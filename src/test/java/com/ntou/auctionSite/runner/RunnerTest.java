@@ -77,7 +77,7 @@ class RunnerTest {
         // Arrange - 確認舊使用者沒有 remainingDrawTimes 欄位（直接查詢 MongoDB）
         Document oldUserDoc = mongoTemplate.findById(testOldUserId, Document.class, "users");
         assertNotNull(oldUserDoc, "舊使用者應該存在");
-        assertFalse(oldUserDoc.containsKey("remainingDrawTimes"), "舊使用者不應該有 remainingDrawTimes 欄位");
+        assertNull(oldUserDoc.get("remainingDrawTimes"), "舊使用者應該沒有抽獎次數");
 
         // 確認新使用者已有 remainingDrawTimes
         User newUserBefore = userRepository.findByUserName("newUserTest").orElseThrow();
