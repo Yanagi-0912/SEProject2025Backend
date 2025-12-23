@@ -101,52 +101,54 @@ public class OrderService {
     //付款功能
     public Order payOrder(String orderID, String userCouponId){
         Order order = getOrderById(orderID);
-        //計算所有商品費用，先不算運費
-        double allProductTotal = order.getTotalPrice()- order.getShippingFee();
+        double allProductTotal = order.getTotalPrice() - order.getShippingFee();
+        double shipFee = order.getShippingFee();
         double discountAmount = 0;
-        double shipFee=order.getShippingFee();
-        // pending才能付款
+
         if(order.getOrderStatus() != Order.OrderStatuses.PENDING){
             throw new IllegalStateException("Order cannot be paid because it is not in PENDING status!");
         }
 
-        // 套用優惠券 (如果有)，拍賣商品不適用優惠券
-        if(userCouponId != null && !userCouponId.isEmpty() && order.getOrderType()!=ProductTypes.AUCTION){
-            UserCoupon userCoupon = userCouponService.applyCoupon(order.getBuyerID(),userCouponId, orderID);
-            // 從 userCoupon.getCouponID() 拿到 Coupon
+        if(userCouponId != null && !userCouponId.isEmpty() && order.getOrderType() != ProductTypes.AUCTION){
+            UserCoupon userCoupon = userCouponService.applyCoupon(order.getBuyerID(), userCouponId, orderID);
             Coupon couponTemplate = couponService.getCouponById(userCoupon.getCouponID());
 
-            switch (couponTemplate.getDiscountType()) {
-                case PERCENT :
-                    discountAmount = allProductTotal * (1.0 - couponTemplate.getDiscountValue());
+            switch(couponTemplate.getDiscountType()){
+                case PERCENT:
+                    discountAmount = allProductTotal * ( couponTemplate.getDiscountValue());
                     break;
-                case FIXED :
-                    discountAmount = couponTemplate.getDiscountValue();
+                case FIXED:
+                    discountAmount = Math.min(couponTemplate.getDiscountValue(), allProductTotal);
                     break;
                 case FREESHIP:
-                    discountAmount = shipFee; // 假設有運費欄位
-                    shipFee=0;
+                    discountAmount = shipFee;
+                    shipFee = 0;
                     order.setShippingFee(0);
                     break;
                 case BUY_ONE_GET_ONE:
-                    discountAmount = applyBuyOneGetOneDiscount(order); // 返回送的商品價格作為折扣
+                    discountAmount = applyBuyOneGetOneDiscount(order);
                     break;
             }
-            if(allProductTotal>=couponTemplate.getMinPurchaseAmount()){
-                order.setTotalPrice(allProductTotal - discountAmount+shipFee);
+
+            if(allProductTotal >= couponTemplate.getMinPurchaseAmount()){
+                if(couponTemplate.getDiscountType() == FREESHIP){
+                    order.setTotalPrice(allProductTotal + shipFee);
+                }
+                else {
+                    order.setTotalPrice(allProductTotal - discountAmount + shipFee);
+                }
             }
-            else{
+            else {
                 throw new IllegalStateException("Order total does not meet the minimum purchase amount for this coupon!");
             }
         }
 
         order.setOrderStatus(Order.OrderStatuses.COMPLETED);
-
-        String buyerID = order.getBuyerID();
-        userCouponService.issueCouponsAfterPay(buyerID); // 發送首購優惠券
+        userCouponService.issueCouponsAfterPay(order.getBuyerID());
 
         return orderRepository.save(order);
     }
+
 
     private double applyBuyOneGetOneDiscount(Order order) {
         //找出價格低於500的商品
