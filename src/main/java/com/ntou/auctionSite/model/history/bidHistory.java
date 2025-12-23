@@ -12,7 +12,7 @@ public class bidHistory extends History{
 
     @Getter
     @JsonProperty("bidAmount")
-    private final int bidAmount;
+    private int bidAmount;
 
     @Getter
     @JsonProperty("productID")
