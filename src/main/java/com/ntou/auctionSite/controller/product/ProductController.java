@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.ntou.auctionSite.service.product.ProductService;
-import com.ntou.auctionSite.service.product.SellingProductsService;
 
 @CrossOrigin("http://localhost:5173")
 @RestController
@@ -32,8 +31,6 @@ public class ProductController { // 負責處理商品新增、上下架、查�
     private UserService userService;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private SellingProductsService sellingProductsService;
 
     //取得所有商品
     //<?>表示可以是任何型態,前端可以提供第幾頁、每頁大小
@@ -496,96 +493,6 @@ public class ProductController { // 負責處理商品新增、上下架、查�
             return ResponseEntity.status(404).body("No category!");
         }
         catch (Exception e){
-            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 取得賣家的所有商品
-     * GET /api/products/seller/{sellerId}
-     */
-    @GetMapping("/seller/{sellerId}")
-    @Operation(
-            summary = "取得賣家的所有商品",
-            description = "根據賣家 ID 查詢該賣家販售的所有商品列表"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "成功取得賣家商品列表",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = Product.class),
-                            examples = @ExampleObject(
-                                    value = "[{\"productID\":\"P001\",\"productName\":\"餅乾\",\"productPrice\":100,\"sellerID\":\"507f1f77bcf86cd799439011\",\"productType\":\"DIRECT\",\"productStatus\":\"ACTIVE\"}]"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "賣家不存在",
-                    content = @Content(
-                            mediaType = "text/plain",
-                            examples = @ExampleObject(value = "賣家不存在: 507f1f77bcf86cd799439011")
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "伺服器錯誤",
-                    content = @Content(
-                            mediaType = "text/plain",
-                            examples = @ExampleObject(value = "Server error: xxx")
-                    )
-            )
-    })
-    public ResponseEntity<?> getSellerProducts(
-            @Parameter(description = "賣家 ID（User._id）", example = "507f1f77bcf86cd799439011", required = true)
-            @PathVariable String sellerId
-    ) {
-        try {
-            List<Product> products = sellingProductsService.getSellerProducts(sellerId);
-            return ResponseEntity.ok(products);
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(500).body("Server error: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 取得賣家的上架商品（ACTIVE）
-     * GET /api/products/seller/{sellerId}/active
-     */
-    @GetMapping("/seller/{sellerId}/active")
-    @Operation(
-            summary = "取得賣家的上架商品",
-            description = "根據賣家 ID 查詢該賣家正在上架的商品列表（狀態為 ACTIVE）"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "成功取得賣家上架商品列表",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = Product.class)
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "賣家不存在")
-    })
-    public ResponseEntity<?> getSellerActiveProducts(
-            @Parameter(description = "賣家 ID（User._id）", example = "507f1f77bcf86cd799439011", required = true)
-            @PathVariable String sellerId
-    ) {
-        try {
-            List<Product> products = sellingProductsService.getSellerActiveProducts(sellerId);
-            return ResponseEntity.ok(products);
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-        catch (Exception e) {
             return ResponseEntity.status(500).body("Server error: " + e.getMessage());
         }
     }
