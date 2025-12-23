@@ -101,7 +101,10 @@ public class OrderService {
     //付款功能
     public Order payOrder(String orderID, String userCouponId){
         Order order = getOrderById(orderID);
-        double totalPrice=order.getTotalPrice();
+        //計算所有商品費用，先不算運費
+        double allProductTotal = order.getTotalPrice()- order.getShippingFee();
+        double discountAmount = 0;
+        double shipFee=order.getShippingFee();
         // pending才能付款
         if(order.getOrderStatus() != Order.OrderStatuses.PENDING){
             throw new IllegalStateException("Order cannot be paid because it is not in PENDING status!");
@@ -110,35 +113,31 @@ public class OrderService {
         // 套用優惠券 (如果有)，拍賣商品不適用優惠券
         if(userCouponId != null && !userCouponId.isEmpty() && order.getOrderType()!=ProductTypes.AUCTION){
             UserCoupon userCoupon = userCouponService.applyCoupon(order.getBuyerID(),userCouponId, orderID);
-
             // 從 userCoupon.getCouponID() 拿到 Coupon
             Coupon couponTemplate = couponService.getCouponById(userCoupon.getCouponID());
 
-            double discountAmount = 0;
             switch (couponTemplate.getDiscountType()) {
                 case PERCENT :
-                    discountAmount = order.getTotalPrice() * (1 - couponTemplate.getDiscountValue());
+                    discountAmount = allProductTotal * (1.0 - couponTemplate.getDiscountValue());
                     break;
                 case FIXED :
                     discountAmount = couponTemplate.getDiscountValue();
                     break;
                 case FREESHIP:
-                    discountAmount = order.getShippingFee(); // 假設有運費欄位
+                    discountAmount = shipFee; // 假設有運費欄位
+                    shipFee=0;
                     order.setShippingFee(0);
                     break;
                 case BUY_ONE_GET_ONE:
                     discountAmount = applyBuyOneGetOneDiscount(order); // 返回送的商品價格作為折扣
                     break;
             }
-            if(totalPrice>couponTemplate.getMinPurchaseAmount()){
-                order.setTotalPrice(order.getTotalPrice() - discountAmount);
+            if(allProductTotal>=couponTemplate.getMinPurchaseAmount()){
+                order.setTotalPrice(allProductTotal - discountAmount+shipFee);
             }
             else{
                 throw new IllegalStateException("Order total does not meet the minimum purchase amount for this coupon!");
             }
-        }
-        else {
-            order.setTotalPrice(order.getTotalPrice());
         }
 
         order.setOrderStatus(Order.OrderStatuses.COMPLETED);

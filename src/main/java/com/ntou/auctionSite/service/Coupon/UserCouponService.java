@@ -64,8 +64,7 @@ public class UserCouponService {
             return uc;
         }
     }
-
-    public UserCoupon drawRandomCoupon(String userId) {
+    public List<Coupon> getAvailableCoupon(){
         List<Coupon> availableCoupons = new ArrayList<>();
         for (Coupon c : couponRepository.findAll()) {
             if (c.getCouponCount() > 0 && c.getExpireTime().isAfter(LocalDateTime.now())) {
@@ -76,7 +75,10 @@ public class UserCouponService {
         if (availableCoupons.isEmpty()) {
             throw new IllegalStateException("No available coupons to draw");
         }
-
+        return availableCoupons;
+    }
+    public UserCoupon drawRandomCoupon(String userId) {
+        List<Coupon> availableCoupons =getAvailableCoupon();
         int idx = new Random().nextInt(availableCoupons.size());
         Coupon selectedCoupon = availableCoupons.get(idx);
         UserCoupon uc = issueCouponToUser(userId, selectedCoupon.getCouponID());
@@ -86,11 +88,19 @@ public class UserCouponService {
 
 
     public void issueCouponsAfterPay(String buyerID) {
+
         //首購優惠
         if (userCouponRepository.findByUserId(buyerID).isEmpty()) {
-            issueCouponToUser(buyerID, "COUP7EC9E12A");//此優惠券介紹:消費滿不限金額可享8折優惠
+            try{
+                issueCouponToUser(buyerID, "COUPC914BDD8");//首購會發放的優惠券
+            }
+            catch(NoSuchElementException  | IllegalStateException e){
+                List<Coupon> couponList=getAvailableCoupon();
+                int idx = new Random().nextInt(couponList.size());
+                Coupon selectedCoupon = couponList.get(idx);
+                issueCouponToUser(buyerID, selectedCoupon.getCouponID());
+            }
         }
-
     }
 
     public UserCoupon findUserCouponById(String userCouponId){
