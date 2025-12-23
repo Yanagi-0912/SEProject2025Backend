@@ -1,11 +1,13 @@
 package com.ntou.auctionSite.service.bid;
 
 import com.ntou.auctionSite.model.cart.Cart;
+import com.ntou.auctionSite.model.history.bidHistory;
 import com.ntou.auctionSite.model.order.Order;
 import com.ntou.auctionSite.model.product.Product;
 import com.ntou.auctionSite.model.product.ProductTypes;
 import com.ntou.auctionSite.repository.ProductRepository;
 import com.ntou.auctionSite.service.cart.CartService;
+import com.ntou.auctionSite.service.history.HistoryService;
 import com.ntou.auctionSite.service.order.OrderService;
 import com.ntou.auctionSite.service.product.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,10 @@ public class BidService {
 
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private HistoryService historyService;
+
     // 用來格式化時間輸出
     DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     // 建立拍賣商品：設定起標價與競標截止時間
@@ -95,6 +101,8 @@ public class BidService {
             throw new IllegalArgumentException("Bid must be higher than current highest bid");
         }
         else{
+            bidHistory bh = new bidHistory(bidderID,productID,bidPrice);
+            historyService.saveBidHistory(bh);
             auctionProduct.setNowHighestBid(bidPrice);
             //auctionProduct.setProductPrice(bidPrice);
             auctionProduct.setUpdatedTime(LocalDateTime.now());
