@@ -37,13 +37,26 @@ public class CartService {
                 .orElse(new Cart(userId, userId, new ArrayList<>()));
 
         // 2. 組合每個項目的完整資訊（商品資訊 + 賣家資訊）
+        // 過濾掉已刪除的商品，避免拋出異常
         List<CartItemDTO> items = cart.getItems().stream()
                 .map(item -> {
+                    // 檢查商品是否存在
                     Product product = productRepository.findById(item.getProductId())
-                            .orElseThrow(() -> new RuntimeException("商品不存在: " + item.getProductId()));
+                            .orElse(null);
+                    
+                    if (product == null) {
+                        // 商品不存在，返回 null，稍後過濾掉
+                        return null;
+                    }
 
+                    // 檢查賣家是否存在
                     User seller = userRepository.findById(product.getSellerID())
-                            .orElseThrow(() -> new RuntimeException("賣家不存在: " + product.getSellerID()));
+                            .orElse(null);
+                    
+                    if (seller == null) {
+                        // 賣家不存在，返回 null，稍後過濾掉
+                        return null;
+                    }
 
                     return new CartItemDTO(
                             item.getItemId(),              // 項目 ID
@@ -57,9 +70,26 @@ public class CartService {
                             product.getProductPrice() * item.getQuantity()  // 小計
                     );
                 })
+                .filter(item -> item != null)  // 過濾掉 null（已刪除的商品）
                 .collect(Collectors.toList());
 
-        // 3. 計算總金額
+        // 3. 如果購物車中有已刪除的商品，更新購物車（移除已刪除的商品）
+        if (items.size() < cart.getItems().size()) {
+            // 重新建立購物車，只保留有效的商品
+            List<Cart.CartItem> validItems = cart.getItems().stream()
+                    .filter(item -> {
+                        Product product = productRepository.findById(item.getProductId()).orElse(null);
+                        if (product == null) return false;
+                        User seller = userRepository.findById(product.getSellerID()).orElse(null);
+                        return seller != null;
+                    })
+                    .collect(Collectors.toList());
+            
+            cart.setItems(validItems);
+            cartRepository.save(cart);
+        }
+
+        // 4. 計算總金額
         int totalAmount = items.stream()
                 .mapToInt(CartItemDTO::getSubtotal)
                 .sum();
